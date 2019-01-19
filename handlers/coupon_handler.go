@@ -1,17 +1,22 @@
 package handlers
 
 import (
-	"encoding/json"
-	"github.com/coupons/model"
+	"github.com/coupons/model/coupon"
+	"io"
 	"net/http"
 )
 
 type CouponService interface {
-	CreateCoupon(coupon model.Coupon)
+	CreateCoupon(coupon coupon.Coupon)
+}
+
+type CouponSerializer interface {
+	Deserialize(body io.ReadCloser) coupon.Coupon
 }
 
 type CouponHandler struct {
 	CouponService CouponService
+	Serializer CouponSerializer
 }
 
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -19,13 +24,7 @@ func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
-	// put following into function on a serializer
-	var coupon model.Coupon
+	coupon := h.Serializer.Deserialize(req.Body)
 
-	decoder := json.NewDecoder(req.Body)
-	decoder.Decode(&coupon)
-
-	// insert into db
 	h.CouponService.CreateCoupon(coupon)
-
 }

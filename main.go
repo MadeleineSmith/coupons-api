@@ -7,6 +7,7 @@ import (
 	"github.com/Moti-API/model"
 	"github.com/coupons/dbservices"
 	"github.com/coupons/handlers"
+	"github.com/coupons/model/coupon"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
@@ -29,8 +30,10 @@ func main() {
 	couponService := dbservices.CouponService{
 		DB: db,
 	}
+	couponSerializer := coupon.Serializer{}
 	couponHandler := handlers.CouponHandler{
 		CouponService: couponService,
+		Serializer: couponSerializer,
 	}
 
 	router.NewRoute().Path("/coupons").Methods(http.MethodPost).Handler(couponHandler)

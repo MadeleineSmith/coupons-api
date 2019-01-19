@@ -1,4 +1,4 @@
-package model
+package coupon
 
 type Coupon struct {
 	Name string
