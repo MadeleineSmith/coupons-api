@@ -18,14 +18,7 @@ import (
 func main() {
 	router := mux.NewRouter().StrictSlash(true)
 
-	applicationConfiguration := loadConfiguration()
-
-	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable",
-		applicationConfiguration.Database.User,
-		applicationConfiguration.Database.Password,
-		applicationConfiguration.Database.DBName)
-
-	db, _ := sql.Open("postgres", connectionString)
+	db := initializeDb()
 
 	couponService := dbservices.CouponService{
 		DB: db,
@@ -39,6 +32,19 @@ func main() {
 	router.NewRoute().Path("/coupons").Methods(http.MethodPost).Handler(couponHandler)
 
 	log.Fatal(http.ListenAndServe(":6584", router))
+}
+
+func initializeDb() *sql.DB {
+	applicationConfiguration := loadConfiguration()
+
+	connectionString := fmt.Sprintf("user=%s password=%s dbname=%s sslmode=disable",
+		applicationConfiguration.Database.User,
+		applicationConfiguration.Database.Password,
+		applicationConfiguration.Database.DBName)
+
+	db, _ := sql.Open("postgres", connectionString)
+
+	return db
 }
 
 
