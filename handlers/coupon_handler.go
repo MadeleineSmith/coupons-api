@@ -8,12 +8,12 @@ import (
 
 //go:generate counterfeiter . CouponService
 type CouponService interface {
-	CreateCoupon(couponInstance coupon.Coupon)
+	CreateCoupon(couponInstance coupon.Coupon) error
 }
 
 //go:generate counterfeiter . CouponSerializer
 type CouponSerializer interface {
-	Deserialize(bodyBytes []byte) coupon.Coupon
+	Deserialize(bodyBytes []byte) (coupon.Coupon, error)
 }
 
 type CouponHandler struct {
@@ -26,11 +26,28 @@ func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
-	bodyBytes, _ := ioutil.ReadAll(req.Body)
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
 
-	couponInstance := h.Serializer.Deserialize(bodyBytes)
+	couponInstance, err := h.Serializer.Deserialize(bodyBytes)
+	if err != nil {
+		handleError(w, err, http.StatusBadRequest)
+		return
+	}
 
-	h.CouponService.CreateCoupon(couponInstance)
+	err = h.CouponService.CreateCoupon(couponInstance)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+// consider placing elsewhere
+func handleError(w http.ResponseWriter, err error, code int) {
+	http.Error(w, err.Error(), code)
 }

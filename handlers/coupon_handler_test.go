@@ -1,6 +1,7 @@
 package handlers_test
 
 import (
+	"errors"
 	"github.com/coupons/handlers"
 	"github.com/coupons/handlers/handlersfakes"
 	"github.com/coupons/model/coupon"
@@ -52,7 +53,7 @@ var _ = Describe("Coupon Handler", func() {
 				Value: 20,
 			}
 
-			fakeCouponSerializer.DeserializeReturns(expectedCoupon)
+			fakeCouponSerializer.DeserializeReturns(expectedCoupon, nil)
 		})
 
 		Context("Creating a coupon", func() {
@@ -66,6 +67,27 @@ var _ = Describe("Coupon Handler", func() {
 
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
 				Expect(fakeCouponService.CreateCouponArgsForCall(0)).To(Equal(expectedCoupon))
+			})
+
+			It("propagates the error if coupon deserialization fails", func() {
+				fakeCouponSerializer.DeserializeReturns(coupon.Coupon{}, errors.New("good luck"))
+
+				handler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+				Expect(fakeCouponSerializer.DeserializeCallCount()).To(Equal(1))
+				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(0))
+			})
+
+			It("propagates the error if the coupon dbservice fails", func() {
+				fakeCouponService.CreateCouponReturns(errors.New("trololololol"))
+
+				handler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
+
+				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
 			})
 		})
 	})

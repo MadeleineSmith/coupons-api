@@ -6,10 +6,10 @@ import (
 
 type Serializer struct {}
 
-func (s Serializer) Deserialize(body []byte) Coupon {
+func (s Serializer) Deserialize(body []byte) (Coupon, error) {
 	var coupon Coupon
 
 	json.Unmarshal(body, &coupon)
 
-	return coupon
+	return coupon, nil
 }

@@ -9,25 +9,36 @@ import (
 )
 
 type FakeCouponService struct {
-	CreateCouponStub        func(couponInstance coupon.Coupon)
+	CreateCouponStub        func(couponInstance coupon.Coupon) error
 	createCouponMutex       sync.RWMutex
 	createCouponArgsForCall []struct {
 		couponInstance coupon.Coupon
+	}
+	createCouponReturns struct {
+		result1 error
+	}
+	createCouponReturnsOnCall map[int]struct {
+		result1 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCouponService) CreateCoupon(couponInstance coupon.Coupon) {
+func (fake *FakeCouponService) CreateCoupon(couponInstance coupon.Coupon) error {
 	fake.createCouponMutex.Lock()
+	ret, specificReturn := fake.createCouponReturnsOnCall[len(fake.createCouponArgsForCall)]
 	fake.createCouponArgsForCall = append(fake.createCouponArgsForCall, struct {
 		couponInstance coupon.Coupon
 	}{couponInstance})
 	fake.recordInvocation("CreateCoupon", []interface{}{couponInstance})
 	fake.createCouponMutex.Unlock()
 	if fake.CreateCouponStub != nil {
-		fake.CreateCouponStub(couponInstance)
+		return fake.CreateCouponStub(couponInstance)
 	}
+	if specificReturn {
+		return ret.result1
+	}
+	return fake.createCouponReturns.result1
 }
 
 func (fake *FakeCouponService) CreateCouponCallCount() int {
@@ -40,6 +51,25 @@ func (fake *FakeCouponService) CreateCouponArgsForCall(i int) coupon.Coupon {
 	fake.createCouponMutex.RLock()
 	defer fake.createCouponMutex.RUnlock()
 	return fake.createCouponArgsForCall[i].couponInstance
+}
+
+func (fake *FakeCouponService) CreateCouponReturns(result1 error) {
+	fake.CreateCouponStub = nil
+	fake.createCouponReturns = struct {
+		result1 error
+	}{result1}
+}
+
+func (fake *FakeCouponService) CreateCouponReturnsOnCall(i int, result1 error) {
+	fake.CreateCouponStub = nil
+	if fake.createCouponReturnsOnCall == nil {
+		fake.createCouponReturnsOnCall = make(map[int]struct {
+			result1 error
+		})
+	}
+	fake.createCouponReturnsOnCall[i] = struct {
+		result1 error
+	}{result1}
 }
 
 func (fake *FakeCouponService) Invocations() map[string][][]interface{} {

@@ -9,22 +9,24 @@ import (
 )
 
 type FakeCouponSerializer struct {
-	DeserializeStub        func(bodyBytes []byte) coupon.Coupon
+	DeserializeStub        func(bodyBytes []byte) (coupon.Coupon, error)
 	deserializeMutex       sync.RWMutex
 	deserializeArgsForCall []struct {
 		bodyBytes []byte
 	}
 	deserializeReturns struct {
 		result1 coupon.Coupon
+		result2 error
 	}
 	deserializeReturnsOnCall map[int]struct {
 		result1 coupon.Coupon
+		result2 error
 	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCouponSerializer) Deserialize(bodyBytes []byte) coupon.Coupon {
+func (fake *FakeCouponSerializer) Deserialize(bodyBytes []byte) (coupon.Coupon, error) {
 	var bodyBytesCopy []byte
 	if bodyBytes != nil {
 		bodyBytesCopy = make([]byte, len(bodyBytes))
@@ -41,9 +43,9 @@ func (fake *FakeCouponSerializer) Deserialize(bodyBytes []byte) coupon.Coupon {
 		return fake.DeserializeStub(bodyBytes)
 	}
 	if specificReturn {
-		return ret.result1
+		return ret.result1, ret.result2
 	}
-	return fake.deserializeReturns.result1
+	return fake.deserializeReturns.result1, fake.deserializeReturns.result2
 }
 
 func (fake *FakeCouponSerializer) DeserializeCallCount() int {
@@ -58,23 +60,26 @@ func (fake *FakeCouponSerializer) DeserializeArgsForCall(i int) []byte {
 	return fake.deserializeArgsForCall[i].bodyBytes
 }
 
-func (fake *FakeCouponSerializer) DeserializeReturns(result1 coupon.Coupon) {
+func (fake *FakeCouponSerializer) DeserializeReturns(result1 coupon.Coupon, result2 error) {
 	fake.DeserializeStub = nil
 	fake.deserializeReturns = struct {
 		result1 coupon.Coupon
-	}{result1}
+		result2 error
+	}{result1, result2}
 }
 
-func (fake *FakeCouponSerializer) DeserializeReturnsOnCall(i int, result1 coupon.Coupon) {
+func (fake *FakeCouponSerializer) DeserializeReturnsOnCall(i int, result1 coupon.Coupon, result2 error) {
 	fake.DeserializeStub = nil
 	if fake.deserializeReturnsOnCall == nil {
 		fake.deserializeReturnsOnCall = make(map[int]struct {
 			result1 coupon.Coupon
+			result2 error
 		})
 	}
 	fake.deserializeReturnsOnCall[i] = struct {
 		result1 coupon.Coupon
-	}{result1}
+		result2 error
+	}{result1, result2}
 }
 
 func (fake *FakeCouponSerializer) Invocations() map[string][][]interface{} {
