@@ -2,16 +2,18 @@ package handlers
 
 import (
 	"github.com/coupons/model/coupon"
-	"io"
+	"io/ioutil"
 	"net/http"
 )
 
+//go:generate counterfeiter . CouponService
 type CouponService interface {
-	CreateCoupon(coupon coupon.Coupon)
+	CreateCoupon(couponInstance coupon.Coupon)
 }
 
+//go:generate counterfeiter . CouponSerializer
 type CouponSerializer interface {
-	Deserialize(body io.ReadCloser) coupon.Coupon
+	Deserialize(bodyBytes []byte) coupon.Coupon
 }
 
 type CouponHandler struct {
@@ -24,7 +26,11 @@ func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
-	coupon := h.Serializer.Deserialize(req.Body)
+	bodyBytes, _ := ioutil.ReadAll(req.Body)
 
-	h.CouponService.CreateCoupon(coupon)
+	couponInstance := h.Serializer.Deserialize(bodyBytes)
+
+	h.CouponService.CreateCoupon(couponInstance)
+
+	w.WriteHeader(http.StatusCreated)
 }
