@@ -29,7 +29,7 @@ func main() {
 		Serializer: couponSerializer,
 	}
 
-	router.NewRoute().Path("/coupons").Methods(http.MethodPost).Handler(couponHandler)
+	router.NewRoute().Path("/coupons").Handler(couponHandler)
 
 	log.Fatal(http.ListenAndServe(":6584", router))
 }

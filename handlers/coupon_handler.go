@@ -22,7 +22,9 @@ type CouponHandler struct {
 }
 
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	h.handlePost(w, req)
+	if req.Method == http.MethodPost {
+		h.handlePost(w, req)
+	}
 }
 
 func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {

@@ -1,0 +1,2 @@
+• coupon_handler -> handleError function -> place elsewhere
+• unit test for handler if HTTP method not supported e.g. DELETE
