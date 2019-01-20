@@ -9,7 +9,10 @@ type Serializer struct {}
 func (s Serializer) Deserialize(body []byte) (Coupon, error) {
 	var coupon Coupon
 
-	json.Unmarshal(body, &coupon)
+	err := json.Unmarshal(body, &coupon)
+	if err != nil {
+		return Coupon{}, err
+	}
 
 	return coupon, nil
 }
