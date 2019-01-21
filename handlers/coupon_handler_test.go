@@ -89,6 +89,16 @@ var _ = Describe("Coupon Handler", func() {
 
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
 			})
+
+			It("errors if the method is unsupported", func() {
+				request.Method = http.MethodDelete
+
+				handler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusMethodNotAllowed))
+
+				Expect(fakeCouponSerializer.DeserializeCallCount()).To(Equal(0))
+			})
 		})
 	})
 })

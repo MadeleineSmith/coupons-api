@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"github.com/coupons/model/coupon"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +25,8 @@ type CouponHandler struct {
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		h.handlePost(w, req)
+	} else {
+		handleError(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
 	}
 }
 
