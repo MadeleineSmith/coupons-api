@@ -52,7 +52,6 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 	w.WriteHeader(http.StatusCreated)
 }
 
-// consider placing elsewhere
 func handleError(w http.ResponseWriter, err error, code int) {
 	http.Error(w, err.Error(), code)
 }
