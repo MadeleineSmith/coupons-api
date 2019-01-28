@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"errors"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/model/coupon"
 	"io/ioutil"
 	"net/http"
 )

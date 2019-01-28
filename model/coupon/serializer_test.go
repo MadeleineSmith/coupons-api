@@ -1,7 +1,7 @@
 package coupon_test
 
 import (
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/model/coupon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -2,9 +2,9 @@ package handlers_test
 
 import (
 	"errors"
-	"github.com/coupons/handlers"
-	"github.com/coupons/handlers/handlersfakes"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/handlers"
+	"github.com/madeleinesmith/coupons/handlers/handlersfakes"
+	"github.com/madeleinesmith/coupons/model/coupon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"net/http"

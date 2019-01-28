@@ -2,7 +2,7 @@ package dbservices
 
 import (
 	"database/sql"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/model/coupon"
 )
 
 type CouponService struct {

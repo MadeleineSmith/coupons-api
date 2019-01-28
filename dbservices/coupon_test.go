@@ -3,8 +3,8 @@ package dbservices_test
 import (
 	"database/sql"
 	"errors"
-	"github.com/coupons/dbservices"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/dbservices"
+	"github.com/madeleinesmith/coupons/model/coupon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"gopkg.in/DATA-DOG/go-sqlmock.v1"

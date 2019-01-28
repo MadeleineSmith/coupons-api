@@ -4,8 +4,8 @@ package handlersfakes
 import (
 	"sync"
 
-	"github.com/coupons/handlers"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/handlers"
+	"github.com/madeleinesmith/coupons/model/coupon"
 )
 
 type FakeCouponService struct {

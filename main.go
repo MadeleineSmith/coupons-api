@@ -1,13 +1,13 @@
-package main
+package main // import "github.com/madeleinesmith/coupons"
 
 import (
+	"github.com/madeleinesmith/coupons/model"
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"github.com/Moti-API/model"
-	"github.com/coupons/dbservices"
-	"github.com/coupons/handlers"
-	"github.com/coupons/model/coupon"
+	"github.com/madeleinesmith/coupons/dbservices"
+	"github.com/madeleinesmith/coupons/handlers"
+	"github.com/madeleinesmith/coupons/model/coupon"
 	"github.com/gorilla/mux"
 	"log"
 	"net/http"
