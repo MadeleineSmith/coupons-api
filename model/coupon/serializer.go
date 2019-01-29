@@ -1,18 +1,19 @@
 package coupon
 
 import (
-	"encoding/json"
+	"bytes"
+	"github.com/google/jsonapi"
 )
 
 type Serializer struct {}
 
 func (s Serializer) Deserialize(body []byte) (Coupon, error) {
-	var coupon Coupon
+	coupon := new(Coupon)
 
-	err := json.Unmarshal(body, &coupon)
+	err := jsonapi.UnmarshalPayload(bytes.NewReader(body), coupon)
 	if err != nil {
 		return Coupon{}, err
 	}
 
-	return coupon, nil
+	return *coupon, nil
 }

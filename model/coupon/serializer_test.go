@@ -17,9 +17,14 @@ var _ = Describe("Coupon Serializer", func() {
 		It("deserializes a coupon", func() {
 
 			bodyJSON := `{
-	"name": "Save £99 at Tesco",
-	"brand": "Tesco",
-	"value": 20
+  "data": {
+    "type": "coupons",
+    "attributes": {
+      "name": "Save £99 at Tesco",
+      "brand": "Tesco",
+      "value": 20
+    }
+  }
 }`
 			body := []byte(bodyJSON)
 			expectedCoupon := coupon.Coupon{
@@ -41,7 +46,6 @@ var _ = Describe("Coupon Serializer", func() {
 			_, err := s.Deserialize([]byte("🦄"))
 
 			Expect(err).To(HaveOccurred())
-
 		})
 	})
 })
