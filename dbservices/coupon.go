@@ -17,3 +17,7 @@ func (s CouponService) CreateCoupon(coupon coupon.Coupon) error {
 
 	return nil
 }
+
+func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
+	return nil
+}

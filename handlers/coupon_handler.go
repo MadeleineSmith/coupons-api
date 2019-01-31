@@ -10,6 +10,7 @@ import (
 //go:generate counterfeiter . CouponService
 type CouponService interface {
 	CreateCoupon(couponInstance coupon.Coupon) error
+	UpdateCoupon(couponInstance coupon.Coupon) error
 }
 
 //go:generate counterfeiter . CouponSerializer
@@ -18,13 +19,15 @@ type CouponSerializer interface {
 }
 
 type CouponHandler struct {
-	CouponService CouponService
 	Serializer CouponSerializer
+	CouponService CouponService
 }
 
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	if req.Method == http.MethodPost {
 		h.handlePost(w, req)
+	} else if req.Method == http.MethodPatch {
+		h.handlePatch(w, req)
 	} else {
 		handleError(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
 	}
@@ -50,6 +53,28 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusCreated)
+}
+
+func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
+	bodyBytes, err := ioutil.ReadAll(req.Body)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	couponInstance, err := h.Serializer.Deserialize(bodyBytes)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	err = h.CouponService.UpdateCoupon(couponInstance)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	w.WriteHeader(http.StatusOK)
 }
 
 func handleError(w http.ResponseWriter, err error, code int) {

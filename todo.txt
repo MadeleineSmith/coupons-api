@@ -1,3 +1,5 @@
 ✓ unit test for handler if HTTP method not supported e.g. DELETE
 
 • coupon_handler -> handleError function -> place elsewhere
+• returning the proper JSON from the POST request
+• Have it set up to test the real database too

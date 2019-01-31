@@ -9,10 +9,10 @@ import (
 )
 
 type FakeCouponSerializer struct {
-	DeserializeStub        func(bodyBytes []byte) (coupon.Coupon, error)
+	DeserializeStub        func([]byte) (coupon.Coupon, error)
 	deserializeMutex       sync.RWMutex
 	deserializeArgsForCall []struct {
-		bodyBytes []byte
+		arg1 []byte
 	}
 	deserializeReturns struct {
 		result1 coupon.Coupon
@@ -26,26 +26,27 @@ type FakeCouponSerializer struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCouponSerializer) Deserialize(bodyBytes []byte) (coupon.Coupon, error) {
-	var bodyBytesCopy []byte
-	if bodyBytes != nil {
-		bodyBytesCopy = make([]byte, len(bodyBytes))
-		copy(bodyBytesCopy, bodyBytes)
+func (fake *FakeCouponSerializer) Deserialize(arg1 []byte) (coupon.Coupon, error) {
+	var arg1Copy []byte
+	if arg1 != nil {
+		arg1Copy = make([]byte, len(arg1))
+		copy(arg1Copy, arg1)
 	}
 	fake.deserializeMutex.Lock()
 	ret, specificReturn := fake.deserializeReturnsOnCall[len(fake.deserializeArgsForCall)]
 	fake.deserializeArgsForCall = append(fake.deserializeArgsForCall, struct {
-		bodyBytes []byte
-	}{bodyBytesCopy})
-	fake.recordInvocation("Deserialize", []interface{}{bodyBytesCopy})
+		arg1 []byte
+	}{arg1Copy})
+	fake.recordInvocation("Deserialize", []interface{}{arg1Copy})
 	fake.deserializeMutex.Unlock()
 	if fake.DeserializeStub != nil {
-		return fake.DeserializeStub(bodyBytes)
+		return fake.DeserializeStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
 	}
-	return fake.deserializeReturns.result1, fake.deserializeReturns.result2
+	fakeReturns := fake.deserializeReturns
+	return fakeReturns.result1, fakeReturns.result2
 }
 
 func (fake *FakeCouponSerializer) DeserializeCallCount() int {
@@ -54,13 +55,22 @@ func (fake *FakeCouponSerializer) DeserializeCallCount() int {
 	return len(fake.deserializeArgsForCall)
 }
 
+func (fake *FakeCouponSerializer) DeserializeCalls(stub func([]byte) (coupon.Coupon, error)) {
+	fake.deserializeMutex.Lock()
+	defer fake.deserializeMutex.Unlock()
+	fake.DeserializeStub = stub
+}
+
 func (fake *FakeCouponSerializer) DeserializeArgsForCall(i int) []byte {
 	fake.deserializeMutex.RLock()
 	defer fake.deserializeMutex.RUnlock()
-	return fake.deserializeArgsForCall[i].bodyBytes
+	argsForCall := fake.deserializeArgsForCall[i]
+	return argsForCall.arg1
 }
 
 func (fake *FakeCouponSerializer) DeserializeReturns(result1 coupon.Coupon, result2 error) {
+	fake.deserializeMutex.Lock()
+	defer fake.deserializeMutex.Unlock()
 	fake.DeserializeStub = nil
 	fake.deserializeReturns = struct {
 		result1 coupon.Coupon
@@ -69,6 +79,8 @@ func (fake *FakeCouponSerializer) DeserializeReturns(result1 coupon.Coupon, resu
 }
 
 func (fake *FakeCouponSerializer) DeserializeReturnsOnCall(i int, result1 coupon.Coupon, result2 error) {
+	fake.deserializeMutex.Lock()
+	defer fake.deserializeMutex.Unlock()
 	fake.DeserializeStub = nil
 	if fake.deserializeReturnsOnCall == nil {
 		fake.deserializeReturnsOnCall = make(map[int]struct {
