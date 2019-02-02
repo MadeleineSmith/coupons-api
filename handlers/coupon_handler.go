@@ -46,6 +46,9 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// TODO MS - add validation step here on couponInstance to assert that all fields are provided
+	// otherwise return an error
+
 	err = h.CouponService.CreateCoupon(couponInstance)
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)

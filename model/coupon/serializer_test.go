@@ -19,6 +19,7 @@ var _ = Describe("Coupon Serializer", func() {
 			bodyJSON := `{
   "data": {
     "type": "coupons",
+	"id": "0faec7ea-239f-11e9-9e44-d770694a0159",
     "attributes": {
       "name": "Save £99 at Tesco",
       "brand": "Tesco",
@@ -27,17 +28,15 @@ var _ = Describe("Coupon Serializer", func() {
   }
 }`
 			body := []byte(bodyJSON)
-			expectedCoupon := coupon.Coupon{
-				Name: "Save £99 at Tesco",
-				Brand: "Tesco",
-				Value: 20,
-			}
 
 			s = coupon.Serializer{}
-			model, err := s.Deserialize(body)
+			deserializeCoupon, err := s.Deserialize(body)
 			Expect(err).To(Not(HaveOccurred()))
 
-			Expect(model).To(Equal(expectedCoupon))
+			Expect(deserializeCoupon.ID).To(Equal("0faec7ea-239f-11e9-9e44-d770694a0159"))
+			Expect(*deserializeCoupon.Name).To(Equal("Save £99 at Tesco"))
+			Expect(*deserializeCoupon.Brand).To(Equal("Tesco"))
+			Expect(*deserializeCoupon.Value).To(Equal(20))
 		})
 
 		It("propagates the error", func() {
