@@ -62,17 +62,27 @@ var _ = Describe("Coupon Service", func() {
 				WillReturnError(errors.New("oops I did it again 😇"))
 
 			err := couponService.CreateCoupon(exampleCoupon)
-			Expect(err).To(HaveOccurred())
+			Expect(err).To(MatchError(ContainSubstring("oops I did it again 😇")))
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})
 	})
 
 	Describe("UpdateCoupon", func() {
-		It("successfully updates a coupon", func() {
-			db, dbMock, err := sqlmock.New()
+		var (
+			dbMock sqlmock.Sqlmock
+			couponService dbservices.CouponService
+			expectedCoupon coupon.Coupon
+			updateQuery string
+		)
+
+		BeforeEach(func() {
+			var db *sql.DB
+			var err error
+
+			db, dbMock, err = sqlmock.New()
 			Expect(err).ToNot(HaveOccurred())
 
-			s := dbservices.CouponService{
+			couponService = dbservices.CouponService{
 				DB: db,
 			}
 
@@ -80,21 +90,34 @@ var _ = Describe("Coupon Service", func() {
 			name := "2 for 1 at Sainsbury's"
 			value := 100
 
-			expectedCoupon := coupon.Coupon{
+			expectedCoupon = coupon.Coupon{
 				ID: "0faec7ea-239f-11e9-9e44-d770694a0159",
 				Name: &name,
 				Brand: &brand,
 				Value: &value,
 			}
 
-			updateQuery := `UPDATE coupons SET name = \$1, brand = \$2, value = \$3 WHERE id = \$4`
+			updateQuery = `UPDATE coupons SET name = \$1, brand = \$2, value = \$3 WHERE id = \$4`
+		})
 
+		It("successfully updates a coupon", func() {
 			dbMock.ExpectExec(updateQuery).
 				WithArgs(*expectedCoupon.Name, *expectedCoupon.Brand, *expectedCoupon.Value, expectedCoupon.ID).
 				WillReturnResult(sqlmock.NewResult(1, 1))
 
-			err = s.UpdateCoupon(expectedCoupon)
+			err := couponService.UpdateCoupon(expectedCoupon)
 			Expect(err).ToNot(HaveOccurred())
+			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
+		})
+
+		It("propagates the error if exec fails", func() {
+			dbMock.ExpectExec(updateQuery).
+				WithArgs(*expectedCoupon.Name, *expectedCoupon.Brand, *expectedCoupon.Value, expectedCoupon.ID).
+				WillReturnError(errors.New("oh dear 😭"))
+
+			err := couponService.UpdateCoupon(expectedCoupon)
+
+			Expect(err).To(MatchError(ContainSubstring("oh dear 😭")))
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})
 	})

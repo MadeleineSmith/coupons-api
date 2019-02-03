@@ -37,9 +37,15 @@ func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
 		updateStatement = updateStatement.Set("value", &coupon.Value)
 	}
 
-	dbQuery, args, _ := updateStatement.ToSql()
+	dbQuery, args, err := updateStatement.ToSql()
+	if err != nil {
+		return err
+	}
 
-	s.DB.Exec(dbQuery, args...)
+	_, err = s.DB.Exec(dbQuery, args...)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
