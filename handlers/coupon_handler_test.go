@@ -54,10 +54,14 @@ var _ = Describe("Coupon Handler", func() {
 			request, err = http.NewRequest("POST", "/omg/lol", updateBody)
 			Expect(err).To(BeNil())
 
+			name := "Save £99 at Tesco"
+			brand := "Tesco"
+			value := 20
+
 			expectedCoupon = coupon.Coupon{
-				Name: "Save £99 at Tesco",
-				Brand: "Tesco",
-				Value: 20,
+				Name: &name,
+				Brand: &brand,
+				Value: &value,
 			}
 
 			fakeCouponSerializer.DeserializeReturns(expectedCoupon, nil)
@@ -158,9 +162,11 @@ var _ = Describe("Coupon Handler", func() {
 			request, err = http.NewRequest("PATCH", "/omg/lol", updateBody)
 			Expect(err).ToNot(HaveOccurred())
 
+			brand := "Sainsbury's"
+
 			expectedCoupon = coupon.Coupon{
 				ID: "0faec7ea-239f-11e9-9e44-d770694a0159",
-				Brand: "Sainsbury's",
+				Brand: &brand,
 			}
 
 			fakeCouponSerializer.DeserializeReturns(expectedCoupon, nil)
