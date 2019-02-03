@@ -3,3 +3,4 @@
 • coupon_handler -> handleError function -> place elsewhere
 • returning the proper JSON from the POST request
 • Have it set up to test the real database too
+• Script to run all unit tests

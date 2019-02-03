@@ -1,6 +1,7 @@
 module github.com/madeleinesmith/coupons
 
 require (
+	github.com/Masterminds/squirrel v1.1.0
 	github.com/google/jsonapi v0.0.0-20181016150055-d0428f63eb51
 	github.com/gorilla/mux v1.7.0
 	github.com/lib/pq v1.0.0
