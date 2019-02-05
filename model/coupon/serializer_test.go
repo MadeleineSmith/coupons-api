@@ -47,4 +47,27 @@ var _ = Describe("Coupon Serializer", func() {
 			Expect(err).To(HaveOccurred())
 		})
 	})
+
+	Context("Serializing", func() {
+		It("serializes a coupon", func() {
+			name := "Save £20 at Madz supermarkets"
+			brand := "Madz supermarkets"
+			value := 20
+
+			exampleCoupon := coupon.Coupon{
+				ID: "658a191a-28b5-11e9-9968-87c211c8c951",
+				Name: &name,
+				Brand: &brand,
+				Value: &value,
+			}
+
+			serializer := coupon.Serializer{}
+
+			byteSlice, _ := serializer.Serialize(exampleCoupon)
+
+			// Find better way to do the below
+			Expect(string(byteSlice)).To(Equal(`{"data":{"type":"coupons","id":"658a191a-28b5-11e9-9968-87c211c8c951","attributes":{"brand":"Madz supermarkets","name":"Save £20 at Madz supermarkets","value":20}}}
+`))
+		})
+	})
 })

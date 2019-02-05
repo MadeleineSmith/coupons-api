@@ -33,7 +33,7 @@ var _ = Describe("Coupon Service", func() {
 				DB: db,
 			}
 
-			insertQuery = `INSERT INTO coupons \(name, brand, value\) VALUES \(\$1, \$2, \$3\)`
+			insertQuery = `INSERT INTO coupons \(name,brand,value\) VALUES \(\$1,\$2,\$3\) RETURNING id`
 
 			name := "Save £108 at Vue"
 			brand := "Vue"
@@ -47,21 +47,26 @@ var _ = Describe("Coupon Service", func() {
 		})
 
 		It("successfully creates a coupon", func() {
-			dbMock.ExpectExec(insertQuery).
-				WithArgs(exampleCoupon.Name, exampleCoupon.Brand, exampleCoupon.Value).
-				WillReturnResult(sqlmock.NewResult(1, 1))
+			dbMock.ExpectQuery(insertQuery).
+				WithArgs(*exampleCoupon.Name, *exampleCoupon.Brand, *exampleCoupon.Value).
+				WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("id-id-id"))
 
-			err := couponService.CreateCoupon(exampleCoupon)
+			createdCoupon, err := couponService.CreateCoupon(exampleCoupon)
 			Expect(err).ToNot(HaveOccurred())
+
+			couponWithId := exampleCoupon
+			couponWithId.ID = "id-id-id"
+
+			Expect(createdCoupon).To(Equal(couponWithId))
+
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})
 
 		It("propagates the error", func() {
-			dbMock.ExpectExec(insertQuery).
-				WithArgs(exampleCoupon.Name, exampleCoupon.Brand, exampleCoupon.Value).
+			dbMock.ExpectQuery("INSERT INTO coupons .*").
 				WillReturnError(errors.New("oops I did it again 😇"))
 
-			err := couponService.CreateCoupon(exampleCoupon)
+			_, err := couponService.CreateCoupon(exampleCoupon)
 			Expect(err).To(MatchError(ContainSubstring("oops I did it again 😇")))
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})

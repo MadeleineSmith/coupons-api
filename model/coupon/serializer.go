@@ -1,6 +1,7 @@
 package coupon
 
 import (
+	"bufio"
 	"bytes"
 	"github.com/google/jsonapi"
 )
@@ -16,4 +17,17 @@ func (s Serializer) Deserialize(body []byte) (Coupon, error) {
 	}
 
 	return *coupon, nil
+}
+
+func (s Serializer) Serialize(coupon Coupon) ([]byte, error) {
+	buffer := bytes.Buffer{}
+	writer := bufio.NewWriter(&buffer)
+	err := jsonapi.MarshalPayload(writer, &coupon)
+	if err != nil {
+		return nil, err
+	}
+
+	writer.Flush()
+
+	return buffer.Bytes(), nil
 }

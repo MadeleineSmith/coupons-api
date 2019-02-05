@@ -24,6 +24,8 @@ var _ = Describe("Coupon Handler", func() {
 			fakeCouponService *handlersfakes.FakeCouponService
 			bodyJSON string
 			expectedCoupon coupon.Coupon
+			createdCoupon coupon.Coupon
+			expectedResponse string
 		)
 
 		BeforeEach(func() {
@@ -50,8 +52,8 @@ var _ = Describe("Coupon Handler", func() {
   }
 }`
 
-			updateBody := strings.NewReader(bodyJSON)
-			request, err = http.NewRequest("POST", "/omg/lol", updateBody)
+			body := strings.NewReader(bodyJSON)
+			request, err = http.NewRequest("POST", "/omg/lol", body)
 			Expect(err).To(BeNil())
 
 			name := "Save £99 at Tesco"
@@ -65,6 +67,25 @@ var _ = Describe("Coupon Handler", func() {
 			}
 
 			fakeCouponSerializer.DeserializeReturns(expectedCoupon, nil)
+
+			createdCoupon = expectedCoupon
+			createdCoupon.ID = "9dfd6d90-1c0a-11e9-9567-73937c5f9289"
+			fakeCouponService.CreateCouponReturns(createdCoupon, nil)
+
+			expectedResponse = `
+{
+  "data": {
+    "type": "coupons",
+    "id": "9dfd6d90-1c0a-11e9-9567-73937c5f9289",
+    "attributes": {
+      "name": "Save £99 at Tesco",
+      "brand": "Tesco",
+      "value": 20
+    }
+  }
+}
+`
+			fakeCouponSerializer.SerializeReturns([]byte(expectedResponse), nil)
 		})
 
 		Context("Creating a coupon", func() {
@@ -72,12 +93,17 @@ var _ = Describe("Coupon Handler", func() {
 				handler.ServeHTTP(recorder, request)
 
 				Expect(recorder.Code).To(Equal(http.StatusCreated))
+				Expect(recorder.Header().Get("Content-Type")).To(Equal("application/json"))
+				Expect(recorder.Body.String()).To(Equal(expectedResponse))
 
 				Expect(fakeCouponSerializer.DeserializeCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.DeserializeArgsForCall(0)).To(Equal([]byte(bodyJSON)))
 
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
 				Expect(fakeCouponService.CreateCouponArgsForCall(0)).To(Equal(expectedCoupon))
+
+				Expect(fakeCouponSerializer.SerializeCallCount()).To(Equal(1))
+				Expect(fakeCouponSerializer.SerializeArgsForCall(0)).To(Equal(createdCoupon))
 			})
 
 			It("propagates the error if reading the request body fails", func() {
@@ -101,13 +127,21 @@ var _ = Describe("Coupon Handler", func() {
 			})
 
 			It("propagates the error if the coupon dbservice fails", func() {
-				fakeCouponService.CreateCouponReturns(errors.New("trololololol"))
+				fakeCouponService.CreateCouponReturns(coupon.Coupon{}, errors.New("trololololol"))
 
 				handler.ServeHTTP(recorder, request)
 
 				Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
 
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
+			})
+
+			It("propagates the error if the coupon serialization fails", func() {
+				fakeCouponSerializer.SerializeReturns(nil, errors.New("😱"))
+
+				handler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
 			})
 
 			// todo: move this test?

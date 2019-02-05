@@ -22,6 +22,19 @@ type FakeCouponSerializer struct {
 		result1 coupon.Coupon
 		result2 error
 	}
+	SerializeStub        func(coupon.Coupon) ([]byte, error)
+	serializeMutex       sync.RWMutex
+	serializeArgsForCall []struct {
+		arg1 coupon.Coupon
+	}
+	serializeReturns struct {
+		result1 []byte
+		result2 error
+	}
+	serializeReturnsOnCall map[int]struct {
+		result1 []byte
+		result2 error
+	}
 	invocations      map[string][][]interface{}
 	invocationsMutex sync.RWMutex
 }
@@ -94,11 +107,76 @@ func (fake *FakeCouponSerializer) DeserializeReturnsOnCall(i int, result1 coupon
 	}{result1, result2}
 }
 
+func (fake *FakeCouponSerializer) Serialize(arg1 coupon.Coupon) ([]byte, error) {
+	fake.serializeMutex.Lock()
+	ret, specificReturn := fake.serializeReturnsOnCall[len(fake.serializeArgsForCall)]
+	fake.serializeArgsForCall = append(fake.serializeArgsForCall, struct {
+		arg1 coupon.Coupon
+	}{arg1})
+	fake.recordInvocation("Serialize", []interface{}{arg1})
+	fake.serializeMutex.Unlock()
+	if fake.SerializeStub != nil {
+		return fake.SerializeStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.serializeReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCouponSerializer) SerializeCallCount() int {
+	fake.serializeMutex.RLock()
+	defer fake.serializeMutex.RUnlock()
+	return len(fake.serializeArgsForCall)
+}
+
+func (fake *FakeCouponSerializer) SerializeCalls(stub func(coupon.Coupon) ([]byte, error)) {
+	fake.serializeMutex.Lock()
+	defer fake.serializeMutex.Unlock()
+	fake.SerializeStub = stub
+}
+
+func (fake *FakeCouponSerializer) SerializeArgsForCall(i int) coupon.Coupon {
+	fake.serializeMutex.RLock()
+	defer fake.serializeMutex.RUnlock()
+	argsForCall := fake.serializeArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCouponSerializer) SerializeReturns(result1 []byte, result2 error) {
+	fake.serializeMutex.Lock()
+	defer fake.serializeMutex.Unlock()
+	fake.SerializeStub = nil
+	fake.serializeReturns = struct {
+		result1 []byte
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCouponSerializer) SerializeReturnsOnCall(i int, result1 []byte, result2 error) {
+	fake.serializeMutex.Lock()
+	defer fake.serializeMutex.Unlock()
+	fake.SerializeStub = nil
+	if fake.serializeReturnsOnCall == nil {
+		fake.serializeReturnsOnCall = make(map[int]struct {
+			result1 []byte
+			result2 error
+		})
+	}
+	fake.serializeReturnsOnCall[i] = struct {
+		result1 []byte
+		result2 error
+	}{result1, result2}
+}
+
 func (fake *FakeCouponSerializer) Invocations() map[string][][]interface{} {
 	fake.invocationsMutex.RLock()
 	defer fake.invocationsMutex.RUnlock()
 	fake.deserializeMutex.RLock()
 	defer fake.deserializeMutex.RUnlock()
+	fake.serializeMutex.RLock()
+	defer fake.serializeMutex.RUnlock()
 	copiedInvocations := map[string][][]interface{}{}
 	for key, value := range fake.invocations {
 		copiedInvocations[key] = value

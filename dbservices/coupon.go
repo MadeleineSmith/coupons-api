@@ -10,13 +10,29 @@ type CouponService struct {
 	DB *sql.DB
 }
 
-func (s CouponService) CreateCoupon(coupon coupon.Coupon) error {
-	_, err := s.DB.Exec("INSERT INTO coupons (name, brand, value) VALUES ($1, $2, $3)", coupon.Name, coupon.Brand, coupon.Value)
+func (s CouponService) CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon, error) {
+	query, args, err := squirrel.StatementBuilder.
+		PlaceholderFormat(squirrel.Dollar).
+		Insert("coupons").
+		Columns("name", "brand", "value").
+		Values(*couponInstance.Name, *couponInstance.Brand, *couponInstance.Value).
+		Suffix("RETURNING id").
+		ToSql()
+
+	// able to test this error case?
+	// right to return empty coupon here?
+	// and below also?
+	// + testing strategy -> mocked db/ real db # of tests
 	if err != nil {
-		return err
+		return coupon.Coupon{}, err
 	}
 
-	return nil
+	err = s.DB.QueryRow(query, args...).Scan(&couponInstance.ID)
+	if err != nil {
+		return coupon.Coupon{}, err
+	}
+
+	return couponInstance, nil
 }
 
 func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {

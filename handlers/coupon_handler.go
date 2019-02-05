@@ -9,13 +9,14 @@ import (
 
 //go:generate counterfeiter . CouponService
 type CouponService interface {
-	CreateCoupon(couponInstance coupon.Coupon) error
+	CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
 }
 
 //go:generate counterfeiter . CouponSerializer
 type CouponSerializer interface {
 	Deserialize(bodyBytes []byte) (coupon.Coupon, error)
+	Serialize(coupon coupon.Coupon) ([]byte, error)
 }
 
 type CouponHandler struct {
@@ -49,13 +50,21 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 	// TODO MS - add validation step here on couponInstance to assert that all fields are provided
 	// otherwise return an error
 
-	err = h.CouponService.CreateCoupon(couponInstance)
+	createdCoupon, err := h.CouponService.CreateCoupon(couponInstance)
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
+	json, err := h.Serializer.Serialize(createdCoupon)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Add("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
+	w.Write(json)
 }
 
 func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
