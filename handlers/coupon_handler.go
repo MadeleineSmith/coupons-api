@@ -86,7 +86,7 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	w.WriteHeader(http.StatusOK)
+	w.WriteHeader(http.StatusNoContent)
 }
 
 func handleError(w http.ResponseWriter, err error, code int) {

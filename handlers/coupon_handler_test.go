@@ -209,7 +209,7 @@ var _ = Describe("Coupon Handler", func() {
 		Context("Updating a coupon", func() {
 			It("successfully updates a coupon", func() {
 				handler.ServeHTTP(recorder, request)
-				Expect(recorder.Code).To(Equal(http.StatusOK))
+				Expect(recorder.Code).To(Equal(http.StatusNoContent))
 
 				Expect(fakeCouponSerializer.DeserializeCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.DeserializeArgsForCall(0)).To(Equal([]byte(bodyJson)))
