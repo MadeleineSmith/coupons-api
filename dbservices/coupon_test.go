@@ -19,7 +19,6 @@ var _ = Describe("Coupon Service", func() {
 			dbMock sqlmock.Sqlmock
 			db *sql.DB
 			couponService dbservices.CouponService
-			insertQuery string
 			exampleCoupon coupon.Coupon
 		)
 
@@ -33,8 +32,6 @@ var _ = Describe("Coupon Service", func() {
 				DB: db,
 			}
 
-			insertQuery = `INSERT INTO coupons \(name,brand,value\) VALUES \(\$1,\$2,\$3\) RETURNING id`
-
 			name := "Save £108 at Vue"
 			brand := "Vue"
 			value := 108
@@ -46,20 +43,31 @@ var _ = Describe("Coupon Service", func() {
 			}
 		})
 
-		It("successfully creates a coupon", func() {
-			dbMock.ExpectQuery(insertQuery).
-				WithArgs(*exampleCoupon.Name, *exampleCoupon.Brand, *exampleCoupon.Value).
-				WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow("id-id-id"))
+		// use real db for happy path
+		// use mocked db for error cases
+		// always use real db for integration tests
 
-			createdCoupon, err := couponService.CreateCoupon(exampleCoupon)
+		It("successfully creates a coupon", func() {
+			couponService = dbservices.CouponService{
+				DB: realDB,
+			}
+
+			returnedCoupon, err := couponService.CreateCoupon(exampleCoupon)
 			Expect(err).ToNot(HaveOccurred())
 
 			couponWithId := exampleCoupon
-			couponWithId.ID = "id-id-id"
+			couponWithId.ID = returnedCoupon.ID
+			Expect(returnedCoupon).To(Equal(couponWithId))
 
-			Expect(createdCoupon).To(Equal(couponWithId))
+			var capturedCoupon coupon.Coupon
 
-			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
+			Expect(realDB.QueryRow("SELECT id, name, brand, value FROM coupons WHERE id=$1", returnedCoupon.ID).
+				Scan(&capturedCoupon.ID, &capturedCoupon.Name, &capturedCoupon.Brand, &capturedCoupon.Value)).To(Succeed())
+
+			Expect(capturedCoupon.ID).NotTo(BeEmpty())
+			Expect(*capturedCoupon.Name).To(Equal("Save £108 at Vue"))
+			Expect(*capturedCoupon.Brand).To(Equal("Vue"))
+			Expect(*capturedCoupon.Value).To(Equal(108))
 		})
 
 		It("propagates the error", func() {
