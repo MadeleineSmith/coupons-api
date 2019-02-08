@@ -114,13 +114,31 @@ var _ = Describe("Coupon Service", func() {
 		})
 
 		It("successfully updates a coupon", func() {
-			dbMock.ExpectExec(updateQuery).
-				WithArgs(*expectedCoupon.Name, *expectedCoupon.Brand, *expectedCoupon.Value, expectedCoupon.ID).
-				WillReturnResult(sqlmock.NewResult(1, 1))
+			var newlyCreatedId string
+			insertStatement := `INSERT INTO coupons (name, brand, value) VALUES ($1, $2, $3) RETURNING id`
+			Expect(realDB.QueryRow(insertStatement, "A namely coupon", "Asda", 41).Scan(&newlyCreatedId)).To(Succeed())
 
-			err := couponService.UpdateCoupon(expectedCoupon)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
+			couponService = dbservices.CouponService{
+				DB: realDB,
+			}
+
+			name := "A less namely coupon"
+			value := 41
+
+			couponToUpdate := coupon.Coupon{
+				ID: newlyCreatedId,
+				Name: &name,
+				Value: &value,
+			}
+
+			Expect(couponService.UpdateCoupon(couponToUpdate)).To(Succeed())
+
+			capturedCoupon := coupon.Coupon{}
+			Expect(realDB.QueryRow("SELECT name, brand, value FROM coupons WHERE id = $1", newlyCreatedId).Scan(&capturedCoupon.Name, &capturedCoupon.Brand, &capturedCoupon.Value)).To(Succeed())
+
+			Expect(*capturedCoupon.Name).To(Equal(*couponToUpdate.Name))
+			Expect(*capturedCoupon.Brand).To(Equal("Asda"))
+			Expect(*capturedCoupon.Value).To(Equal(*couponToUpdate.Value))
 		})
 
 		It("propagates the error if exec fails", func() {

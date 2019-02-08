@@ -23,6 +23,15 @@ var _ = AfterSuite(func() {
 	realDB.Close()
 })
 
+var _ = AfterEach(func() {
+	cleanDB()
+})
+
+func cleanDB() {
+	_, err := realDB.Exec("TRUNCATE TABLE coupons")
+	Expect(err).NotTo(HaveOccurred())
+}
+
 func initializeDb() *sql.DB {
 	connectionString := "user=testing password=testingtesting123 dbname=coupons_test sslmode=disable"
 
