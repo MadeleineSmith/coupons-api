@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# testing user must be a superuser role
+# `testing` user must be a superuser role
 
 DB_NAME=${1:-coupons_test}
 DB_PASSWORD=${2:-testingtesting123}

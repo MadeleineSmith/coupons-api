@@ -11,12 +11,14 @@ import (
 type CouponService interface {
 	CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
+	GetCoupons() ([]*coupon.Coupon, error)
 }
 
 //go:generate counterfeiter . CouponSerializer
 type CouponSerializer interface {
-	Deserialize(bodyBytes []byte) (coupon.Coupon, error)
-	Serialize(coupon coupon.Coupon) ([]byte, error)
+	DeserializeCoupon(bodyBytes []byte) (coupon.Coupon, error)
+	SerializeCoupon(coupon coupon.Coupon) ([]byte, error)
+	SerializeCoupons([]*coupon.Coupon) ([]byte, error)
 }
 
 type CouponHandler struct {
@@ -29,6 +31,8 @@ func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 		h.handlePost(w, req)
 	} else if req.Method == http.MethodPatch {
 		h.handlePatch(w, req)
+	} else if req.Method == http.MethodGet {
+		h.handleGet(w, req)
 	} else {
 		handleError(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
 	}
@@ -41,7 +45,7 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	couponInstance, err := h.Serializer.Deserialize(bodyBytes)
+	couponInstance, err := h.Serializer.DeserializeCoupon(bodyBytes)
 	if err != nil {
 		handleError(w, err, http.StatusBadRequest)
 		return
@@ -56,13 +60,13 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	json, err := h.Serializer.Serialize(createdCoupon)
+	json, err := h.Serializer.SerializeCoupon(createdCoupon)
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
 		return
 	}
 
-	w.Header().Add("Content-Type", "application/json")
+	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusCreated)
 	w.Write(json)
 }
@@ -74,7 +78,7 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	couponInstance, err := h.Serializer.Deserialize(bodyBytes)
+	couponInstance, err := h.Serializer.DeserializeCoupon(bodyBytes)
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
 		return
@@ -87,6 +91,23 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 	}
 
 	w.WriteHeader(http.StatusNoContent)
+}
+
+func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
+	coupons, err := h.CouponService.GetCoupons()
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	serializerCoupons, err := h.Serializer.SerializeCoupons(coupons)
+	if err != nil {
+		handleError(w, err, http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	w.Write(serializerCoupons)
 }
 
 func handleError(w http.ResponseWriter, err error, code int) {

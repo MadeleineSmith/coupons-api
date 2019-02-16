@@ -8,7 +8,7 @@ import (
 
 type Serializer struct {}
 
-func (s Serializer) Deserialize(body []byte) (Coupon, error) {
+func (s Serializer) DeserializeCoupon(body []byte) (Coupon, error) {
 	coupon := new(Coupon)
 
 	err := jsonapi.UnmarshalPayload(bytes.NewReader(body), coupon)
@@ -19,10 +19,24 @@ func (s Serializer) Deserialize(body []byte) (Coupon, error) {
 	return *coupon, nil
 }
 
-func (s Serializer) Serialize(coupon Coupon) ([]byte, error) {
+func (s Serializer) SerializeCoupon(coupon Coupon) ([]byte, error) {
 	buffer := bytes.Buffer{}
 	writer := bufio.NewWriter(&buffer)
 	err := jsonapi.MarshalPayload(writer, &coupon)
+	if err != nil {
+		return nil, err
+	}
+
+	writer.Flush()
+
+	return buffer.Bytes(), nil
+}
+
+func (s Serializer) SerializeCoupons(coupons []*Coupon) ([]byte, error) {
+	buffer := bytes.Buffer{}
+	writer := bufio.NewWriter(&buffer)
+
+	err := jsonapi.MarshalPayloadWithoutIncluded(writer, coupons)
 	if err != nil {
 		return nil, err
 	}

@@ -65,3 +65,35 @@ func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
 
 	return nil
 }
+
+func (s CouponService) GetCoupons() ([]*coupon.Coupon, error) {
+	selectStatement := squirrel.StatementBuilder.
+		Select("id, name, brand, value").
+		From("coupons")
+
+	dbQuery, _, err := selectStatement.ToSql()
+	if err != nil {
+		return nil, err
+	}
+
+	rows, err := s.DB.Query(dbQuery)
+	if err != nil {
+		return nil, err
+	}
+
+	var couponSlice []*coupon.Coupon
+
+	for rows.Next() {
+		couponInstance := new(coupon.Coupon)
+
+		err := rows.Scan(&couponInstance.ID, &couponInstance.Name, &couponInstance.Brand, &couponInstance.Value)
+
+		if err != nil {
+			return nil, err
+		}
+
+		couponSlice = append(couponSlice, couponInstance)
+	}
+
+	return couponSlice, nil
+}
