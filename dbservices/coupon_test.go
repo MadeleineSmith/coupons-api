@@ -198,14 +198,14 @@ var _ = Describe("Coupon Service", func() {
 		})
 	})
 
-	Describe("GetCouponByFilter", func() {
+	Describe("GetCouponById", func() {
 		It("successfully retrieves a coupon", func() {
 			var couponId string
 
 			insertStatement := `INSERT INTO coupons (name, brand, value) VALUES ($1, $2, $3) RETURNING id`
 			Expect(realDB.QueryRow(insertStatement, "Save some money", "Accessorize", 10).Scan(&couponId)).To(Succeed())
 
-			retrievedCoupon, err := realService.GetCouponByFilter("id", couponId)
+			retrievedCoupon, err := realService.GetCouponById(couponId)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(*retrievedCoupon.Name).To(Equal("Save some money"))
@@ -216,7 +216,7 @@ var _ = Describe("Coupon Service", func() {
 		It("propagates the error if QueryRow/ scanning fails", func() {
 			dbMock.ExpectQuery(`SELECT id, name, brand, value .*`).WillReturnError(sql.ErrNoRows)
 
-			_, err := mockedService.GetCouponByFilter("id", "123")
+			_, err := mockedService.GetCouponById("123")
 			Expect(err).To(MatchError(sql.ErrNoRows))
 		})
 	})

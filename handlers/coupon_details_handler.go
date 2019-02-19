@@ -34,7 +34,7 @@ func (h CouponDetailsHandler) handleGet(w http.ResponseWriter, req *http.Request
 		return
 	}
 
-	couponInstance, err := h.CouponService.GetCouponByFilter("id", couponId)
+	couponInstance, err := h.CouponService.GetCouponById(couponId)
 	if err != nil {
 		var code int
 		switch err {

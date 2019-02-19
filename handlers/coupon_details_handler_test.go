@@ -46,7 +46,7 @@ var _ = Describe("CouponDetailsHandler", func() {
 				fakeCouponSerializer = handlersfakes.FakeCouponSerializer{}
 
 				sampleCoupon = new(coupon.Coupon)
-				fakeCouponService.GetCouponByFilterReturns(sampleCoupon, nil)
+				fakeCouponService.GetCouponByIdReturns(sampleCoupon, nil)
 				fakeCouponSerializer.SerializeCouponReturns([]byte("halfway there 🙏"), nil)
 
 				handler = handlers.CouponDetailsHandler{
@@ -60,10 +60,8 @@ var _ = Describe("CouponDetailsHandler", func() {
 				Expect(recorder.Code).To(Equal(http.StatusOK))
 				Expect(recorder.Header().Get("Content-Type")).To(Equal("application/json"))
 
-				Expect(fakeCouponService.GetCouponByFilterCallCount()).To(Equal(1))
-				filterName, filterValue := fakeCouponService.GetCouponByFilterArgsForCall(0)
-				Expect(filterName).To(Equal("id"))
-				Expect(filterValue).To(Equal(couponId))
+				Expect(fakeCouponService.GetCouponByIdCallCount()).To(Equal(1))
+				Expect(fakeCouponService.GetCouponByIdArgsForCall(0)).To(Equal(couponId))
 
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponArgsForCall(0)).To(Equal(sampleCoupon))
@@ -78,31 +76,31 @@ var _ = Describe("CouponDetailsHandler", func() {
 				handler.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
 
-				Expect(fakeCouponService.GetCouponByFilterCallCount()).To(Equal(0))
+				Expect(fakeCouponService.GetCouponByIdCallCount()).To(Equal(0))
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(0))
 
 				Expect(string(recorder.Body.Bytes())).To(ContainSubstring("couponId URL variable not found"))
 			})
 
 			It("returns a 404 if the coupon id does not exist", func() {
-				fakeCouponService.GetCouponByFilterReturns(&coupon.Coupon{}, sql.ErrNoRows)
+				fakeCouponService.GetCouponByIdReturns(&coupon.Coupon{}, sql.ErrNoRows)
 
 				handler.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusNotFound))
 
-				Expect(fakeCouponService.GetCouponByFilterCallCount()).To(Equal(1))
+				Expect(fakeCouponService.GetCouponByIdCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(0))
 
 				Expect(string(recorder.Body.Bytes())).To(ContainSubstring("sql: no rows in result set"))
 			})
 
 			It("propagates the error if the db service fails", func() {
-				fakeCouponService.GetCouponByFilterReturns(&coupon.Coupon{}, errors.New("🎷🎷🎷🎷"))
+				fakeCouponService.GetCouponByIdReturns(&coupon.Coupon{}, errors.New("🎷🎷🎷🎷"))
 
 				handler.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
 
-				Expect(fakeCouponService.GetCouponByFilterCallCount()).To(Equal(1))
+				Expect(fakeCouponService.GetCouponByIdCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(0))
 
 				Expect(string(recorder.Body.Bytes())).To(ContainSubstring("🎷🎷🎷🎷"))
@@ -114,7 +112,7 @@ var _ = Describe("CouponDetailsHandler", func() {
 				handler.ServeHTTP(recorder, request)
 				Expect(recorder.Code).To(Equal(http.StatusInternalServerError))
 
-				Expect(fakeCouponService.GetCouponByFilterCallCount()).To(Equal(1))
+				Expect(fakeCouponService.GetCouponByIdCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(1))
 
 				Expect(string(recorder.Body.Bytes())).To(ContainSubstring("shocking 👻"))
