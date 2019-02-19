@@ -70,7 +70,7 @@ var _ = Describe("Coupon Handler", func() {
 
 			createdCoupon = expectedCoupon
 			createdCoupon.ID = "9dfd6d90-1c0a-11e9-9567-73937c5f9289"
-			fakeCouponService.CreateCouponReturns(createdCoupon, nil)
+			fakeCouponService.CreateCouponReturns(&createdCoupon, nil)
 
 			expectedResponse = `
 {
@@ -103,7 +103,7 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(fakeCouponService.CreateCouponArgsForCall(0)).To(Equal(expectedCoupon))
 
 				Expect(fakeCouponSerializer.SerializeCouponCallCount()).To(Equal(1))
-				Expect(fakeCouponSerializer.SerializeCouponArgsForCall(0)).To(Equal(createdCoupon))
+				Expect(fakeCouponSerializer.SerializeCouponArgsForCall(0)).To(Equal(&createdCoupon))
 			})
 
 			It("propagates the error if reading the request body fails", func() {
@@ -127,7 +127,7 @@ var _ = Describe("Coupon Handler", func() {
 			})
 
 			It("propagates the error if the coupon dbservice fails", func() {
-				fakeCouponService.CreateCouponReturns(coupon.Coupon{}, errors.New("trololololol"))
+				fakeCouponService.CreateCouponReturns(nil, errors.New("trololololol"))
 
 				handler.ServeHTTP(recorder, request)
 

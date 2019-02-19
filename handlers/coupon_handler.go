@@ -9,15 +9,16 @@ import (
 
 //go:generate counterfeiter . CouponService
 type CouponService interface {
-	CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon, error)
+	CreateCoupon(couponInstance coupon.Coupon) (*coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
 	GetCoupons() ([]*coupon.Coupon, error)
+	GetCouponById(couponId string) (*coupon.Coupon, error)
 }
 
 //go:generate counterfeiter . CouponSerializer
 type CouponSerializer interface {
 	DeserializeCoupon(bodyBytes []byte) (coupon.Coupon, error)
-	SerializeCoupon(coupon coupon.Coupon) ([]byte, error)
+	SerializeCoupon(coupon *coupon.Coupon) ([]byte, error)
 	SerializeCoupons([]*coupon.Coupon) ([]byte, error)
 }
 
@@ -27,13 +28,14 @@ type CouponHandler struct {
 }
 
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
-	if req.Method == http.MethodPost {
+	switch req.Method {
+	case http.MethodPost:
 		h.handlePost(w, req)
-	} else if req.Method == http.MethodPatch {
+	case http.MethodPatch:
 		h.handlePatch(w, req)
-	} else if req.Method == http.MethodGet {
+	case http.MethodGet:
 		h.handleGet(w, req)
-	} else {
+	default:
 		handleError(w, errors.New("Method not allowed"), http.StatusMethodNotAllowed)
 	}
 }

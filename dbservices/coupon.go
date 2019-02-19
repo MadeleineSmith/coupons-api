@@ -10,7 +10,7 @@ type CouponService struct {
 	DB *sql.DB
 }
 
-func (s CouponService) CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon, error) {
+func (s CouponService) CreateCoupon(couponInstance coupon.Coupon) (*coupon.Coupon, error) {
 	query, args, err := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).
 		Insert("coupons").
@@ -19,20 +19,16 @@ func (s CouponService) CreateCoupon(couponInstance coupon.Coupon) (coupon.Coupon
 		Suffix("RETURNING id").
 		ToSql()
 
-	// able to test this error case?
-	// right to return empty coupon here?
-	// and below also?
-	// + testing strategy -> mocked db/ real db # of tests
 	if err != nil {
-		return coupon.Coupon{}, err
+		return nil, err
 	}
 
 	err = s.DB.QueryRow(query, args...).Scan(&couponInstance.ID)
 	if err != nil {
-		return coupon.Coupon{}, err
+		return nil, err
 	}
 
-	return couponInstance, nil
+	return &couponInstance, nil
 }
 
 func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
@@ -96,4 +92,27 @@ func (s CouponService) GetCoupons() ([]*coupon.Coupon, error) {
 	}
 
 	return couponSlice, nil
+}
+
+func (s CouponService) GetCouponById(couponId string) (*coupon.Coupon, error) {
+	sqlString, args, err := squirrel.StatementBuilder.
+		PlaceholderFormat(squirrel.Dollar).
+		Select("id", "name", "brand", "value").
+		From("coupons").
+		Where(squirrel.Eq{"id": couponId}).
+		ToSql()
+
+	if err != nil {
+		return nil, err
+	}
+
+	row := s.DB.QueryRow(sqlString, args...)
+
+	var couponInstance coupon.Coupon
+	err = row.Scan(&couponInstance.ID, &couponInstance.Name, &couponInstance.Brand, &couponInstance.Value)
+	if err != nil {
+		return nil, err
+	}
+
+	return &couponInstance, nil
 }

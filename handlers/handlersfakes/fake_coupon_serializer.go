@@ -22,10 +22,10 @@ type FakeCouponSerializer struct {
 		result1 coupon.Coupon
 		result2 error
 	}
-	SerializeCouponStub        func(coupon.Coupon) ([]byte, error)
+	SerializeCouponStub        func(*coupon.Coupon) ([]byte, error)
 	serializeCouponMutex       sync.RWMutex
 	serializeCouponArgsForCall []struct {
-		arg1 coupon.Coupon
+		arg1 *coupon.Coupon
 	}
 	serializeCouponReturns struct {
 		result1 []byte
@@ -120,11 +120,11 @@ func (fake *FakeCouponSerializer) DeserializeCouponReturnsOnCall(i int, result1 
 	}{result1, result2}
 }
 
-func (fake *FakeCouponSerializer) SerializeCoupon(arg1 coupon.Coupon) ([]byte, error) {
+func (fake *FakeCouponSerializer) SerializeCoupon(arg1 *coupon.Coupon) ([]byte, error) {
 	fake.serializeCouponMutex.Lock()
 	ret, specificReturn := fake.serializeCouponReturnsOnCall[len(fake.serializeCouponArgsForCall)]
 	fake.serializeCouponArgsForCall = append(fake.serializeCouponArgsForCall, struct {
-		arg1 coupon.Coupon
+		arg1 *coupon.Coupon
 	}{arg1})
 	fake.recordInvocation("SerializeCoupon", []interface{}{arg1})
 	fake.serializeCouponMutex.Unlock()
@@ -144,13 +144,13 @@ func (fake *FakeCouponSerializer) SerializeCouponCallCount() int {
 	return len(fake.serializeCouponArgsForCall)
 }
 
-func (fake *FakeCouponSerializer) SerializeCouponCalls(stub func(coupon.Coupon) ([]byte, error)) {
+func (fake *FakeCouponSerializer) SerializeCouponCalls(stub func(*coupon.Coupon) ([]byte, error)) {
 	fake.serializeCouponMutex.Lock()
 	defer fake.serializeCouponMutex.Unlock()
 	fake.SerializeCouponStub = stub
 }
 
-func (fake *FakeCouponSerializer) SerializeCouponArgsForCall(i int) coupon.Coupon {
+func (fake *FakeCouponSerializer) SerializeCouponArgsForCall(i int) *coupon.Coupon {
 	fake.serializeCouponMutex.RLock()
 	defer fake.serializeCouponMutex.RUnlock()
 	argsForCall := fake.serializeCouponArgsForCall[i]

@@ -9,17 +9,30 @@ import (
 )
 
 type FakeCouponService struct {
-	CreateCouponStub        func(coupon.Coupon) (coupon.Coupon, error)
+	CreateCouponStub        func(coupon.Coupon) (*coupon.Coupon, error)
 	createCouponMutex       sync.RWMutex
 	createCouponArgsForCall []struct {
 		arg1 coupon.Coupon
 	}
 	createCouponReturns struct {
-		result1 coupon.Coupon
+		result1 *coupon.Coupon
 		result2 error
 	}
 	createCouponReturnsOnCall map[int]struct {
-		result1 coupon.Coupon
+		result1 *coupon.Coupon
+		result2 error
+	}
+	GetCouponByIdStub        func(string) (*coupon.Coupon, error)
+	getCouponByIdMutex       sync.RWMutex
+	getCouponByIdArgsForCall []struct {
+		arg1 string
+	}
+	getCouponByIdReturns struct {
+		result1 *coupon.Coupon
+		result2 error
+	}
+	getCouponByIdReturnsOnCall map[int]struct {
+		result1 *coupon.Coupon
 		result2 error
 	}
 	GetCouponsStub        func() ([]*coupon.Coupon, error)
@@ -49,7 +62,7 @@ type FakeCouponService struct {
 	invocationsMutex sync.RWMutex
 }
 
-func (fake *FakeCouponService) CreateCoupon(arg1 coupon.Coupon) (coupon.Coupon, error) {
+func (fake *FakeCouponService) CreateCoupon(arg1 coupon.Coupon) (*coupon.Coupon, error) {
 	fake.createCouponMutex.Lock()
 	ret, specificReturn := fake.createCouponReturnsOnCall[len(fake.createCouponArgsForCall)]
 	fake.createCouponArgsForCall = append(fake.createCouponArgsForCall, struct {
@@ -73,7 +86,7 @@ func (fake *FakeCouponService) CreateCouponCallCount() int {
 	return len(fake.createCouponArgsForCall)
 }
 
-func (fake *FakeCouponService) CreateCouponCalls(stub func(coupon.Coupon) (coupon.Coupon, error)) {
+func (fake *FakeCouponService) CreateCouponCalls(stub func(coupon.Coupon) (*coupon.Coupon, error)) {
 	fake.createCouponMutex.Lock()
 	defer fake.createCouponMutex.Unlock()
 	fake.CreateCouponStub = stub
@@ -86,28 +99,91 @@ func (fake *FakeCouponService) CreateCouponArgsForCall(i int) coupon.Coupon {
 	return argsForCall.arg1
 }
 
-func (fake *FakeCouponService) CreateCouponReturns(result1 coupon.Coupon, result2 error) {
+func (fake *FakeCouponService) CreateCouponReturns(result1 *coupon.Coupon, result2 error) {
 	fake.createCouponMutex.Lock()
 	defer fake.createCouponMutex.Unlock()
 	fake.CreateCouponStub = nil
 	fake.createCouponReturns = struct {
-		result1 coupon.Coupon
+		result1 *coupon.Coupon
 		result2 error
 	}{result1, result2}
 }
 
-func (fake *FakeCouponService) CreateCouponReturnsOnCall(i int, result1 coupon.Coupon, result2 error) {
+func (fake *FakeCouponService) CreateCouponReturnsOnCall(i int, result1 *coupon.Coupon, result2 error) {
 	fake.createCouponMutex.Lock()
 	defer fake.createCouponMutex.Unlock()
 	fake.CreateCouponStub = nil
 	if fake.createCouponReturnsOnCall == nil {
 		fake.createCouponReturnsOnCall = make(map[int]struct {
-			result1 coupon.Coupon
+			result1 *coupon.Coupon
 			result2 error
 		})
 	}
 	fake.createCouponReturnsOnCall[i] = struct {
-		result1 coupon.Coupon
+		result1 *coupon.Coupon
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCouponService) GetCouponById(arg1 string) (*coupon.Coupon, error) {
+	fake.getCouponByIdMutex.Lock()
+	ret, specificReturn := fake.getCouponByIdReturnsOnCall[len(fake.getCouponByIdArgsForCall)]
+	fake.getCouponByIdArgsForCall = append(fake.getCouponByIdArgsForCall, struct {
+		arg1 string
+	}{arg1})
+	fake.recordInvocation("GetCouponById", []interface{}{arg1})
+	fake.getCouponByIdMutex.Unlock()
+	if fake.GetCouponByIdStub != nil {
+		return fake.GetCouponByIdStub(arg1)
+	}
+	if specificReturn {
+		return ret.result1, ret.result2
+	}
+	fakeReturns := fake.getCouponByIdReturns
+	return fakeReturns.result1, fakeReturns.result2
+}
+
+func (fake *FakeCouponService) GetCouponByIdCallCount() int {
+	fake.getCouponByIdMutex.RLock()
+	defer fake.getCouponByIdMutex.RUnlock()
+	return len(fake.getCouponByIdArgsForCall)
+}
+
+func (fake *FakeCouponService) GetCouponByIdCalls(stub func(string) (*coupon.Coupon, error)) {
+	fake.getCouponByIdMutex.Lock()
+	defer fake.getCouponByIdMutex.Unlock()
+	fake.GetCouponByIdStub = stub
+}
+
+func (fake *FakeCouponService) GetCouponByIdArgsForCall(i int) string {
+	fake.getCouponByIdMutex.RLock()
+	defer fake.getCouponByIdMutex.RUnlock()
+	argsForCall := fake.getCouponByIdArgsForCall[i]
+	return argsForCall.arg1
+}
+
+func (fake *FakeCouponService) GetCouponByIdReturns(result1 *coupon.Coupon, result2 error) {
+	fake.getCouponByIdMutex.Lock()
+	defer fake.getCouponByIdMutex.Unlock()
+	fake.GetCouponByIdStub = nil
+	fake.getCouponByIdReturns = struct {
+		result1 *coupon.Coupon
+		result2 error
+	}{result1, result2}
+}
+
+func (fake *FakeCouponService) GetCouponByIdReturnsOnCall(i int, result1 *coupon.Coupon, result2 error) {
+	fake.getCouponByIdMutex.Lock()
+	defer fake.getCouponByIdMutex.Unlock()
+	fake.GetCouponByIdStub = nil
+	if fake.getCouponByIdReturnsOnCall == nil {
+		fake.getCouponByIdReturnsOnCall = make(map[int]struct {
+			result1 *coupon.Coupon
+			result2 error
+		})
+	}
+	fake.getCouponByIdReturnsOnCall[i] = struct {
+		result1 *coupon.Coupon
 		result2 error
 	}{result1, result2}
 }
@@ -232,6 +308,8 @@ func (fake *FakeCouponService) Invocations() map[string][][]interface{} {
 	defer fake.invocationsMutex.RUnlock()
 	fake.createCouponMutex.RLock()
 	defer fake.createCouponMutex.RUnlock()
+	fake.getCouponByIdMutex.RLock()
+	defer fake.getCouponByIdMutex.RUnlock()
 	fake.getCouponsMutex.RLock()
 	defer fake.getCouponsMutex.RUnlock()
 	fake.updateCouponMutex.RLock()

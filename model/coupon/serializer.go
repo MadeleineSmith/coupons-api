@@ -19,10 +19,10 @@ func (s Serializer) DeserializeCoupon(body []byte) (Coupon, error) {
 	return *coupon, nil
 }
 
-func (s Serializer) SerializeCoupon(coupon Coupon) ([]byte, error) {
+func (s Serializer) SerializeCoupon(coupon *Coupon) ([]byte, error) {
 	buffer := bytes.Buffer{}
 	writer := bufio.NewWriter(&buffer)
-	err := jsonapi.MarshalPayload(writer, &coupon)
+	err := jsonapi.MarshalPayload(writer, coupon)
 	if err != nil {
 		return nil, err
 	}

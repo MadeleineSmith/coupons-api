@@ -63,7 +63,7 @@ var _ = Describe("Coupon Serializer", func() {
 
 			serializer := coupon.Serializer{}
 
-			byteSlice, _ := serializer.SerializeCoupon(exampleCoupon)
+			byteSlice, _ := serializer.SerializeCoupon(&exampleCoupon)
 
 			Expect(string(byteSlice)).To(MatchJSON(`{
    "data":{

@@ -56,7 +56,7 @@ var _ = Describe("Coupon Service", func() {
 
 			couponWithId := exampleCoupon
 			couponWithId.ID = returnedCoupon.ID
-			Expect(returnedCoupon).To(Equal(couponWithId))
+			Expect(returnedCoupon).To(Equal(&couponWithId))
 
 			var capturedCoupon coupon.Coupon
 
@@ -195,6 +195,29 @@ var _ = Describe("Coupon Service", func() {
 			Expect(err).To(HaveOccurred())
 
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
+		})
+	})
+
+	Describe("GetCouponById", func() {
+		It("successfully retrieves a coupon", func() {
+			var couponId string
+
+			insertStatement := `INSERT INTO coupons (name, brand, value) VALUES ($1, $2, $3) RETURNING id`
+			Expect(realDB.QueryRow(insertStatement, "Save some money", "Accessorize", 10).Scan(&couponId)).To(Succeed())
+
+			retrievedCoupon, err := realService.GetCouponById(couponId)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(*retrievedCoupon.Name).To(Equal("Save some money"))
+			Expect(*retrievedCoupon.Brand).To(Equal("Accessorize"))
+			Expect(*retrievedCoupon.Value).To(Equal(10))
+		})
+
+		It("propagates the error if QueryRow/ scanning fails", func() {
+			dbMock.ExpectQuery(`SELECT id, name, brand, value .*`).WillReturnError(sql.ErrNoRows)
+
+			_, err := mockedService.GetCouponById("123")
+			Expect(err).To(MatchError(sql.ErrNoRows))
 		})
 	})
 })
