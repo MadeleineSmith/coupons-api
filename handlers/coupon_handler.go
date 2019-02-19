@@ -12,7 +12,7 @@ type CouponService interface {
 	CreateCoupon(couponInstance coupon.Coupon) (*coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
 	GetCoupons() ([]*coupon.Coupon, error)
-	GetCouponById(couponId string) (*coupon.Coupon, error)
+	GetCouponByFilter(filterName string, value string) (*coupon.Coupon, error)
 }
 
 //go:generate counterfeiter . CouponSerializer

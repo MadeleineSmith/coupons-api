@@ -94,12 +94,12 @@ func (s CouponService) GetCoupons() ([]*coupon.Coupon, error) {
 	return couponSlice, nil
 }
 
-func (s CouponService) GetCouponById(couponId string) (*coupon.Coupon, error) {
+func (s CouponService) GetCouponByFilter(filterName string, value string) (*coupon.Coupon, error) {
 	sqlString, args, err := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).
 		Select("id", "name", "brand", "value").
 		From("coupons").
-		Where(squirrel.Eq{"id": couponId}).
+		Where(squirrel.Eq{filterName: value}).
 		ToSql()
 
 	if err != nil {
