@@ -138,48 +138,11 @@ var _ = Describe("Coupon Service", func() {
 	})
 
 	Describe("GetCoupons", func() {
-		It("successfully retrieves coupons", func() {
-			id1 := "354403f0-1c0e-11e9-9142-134e17ba9a5f"
-			name1 := "Save £10 at Madeleine's Supermercado"
-			brand1 := "Madeleine's"
-			value1 := 10
+		var (
+			expectedCoupons []*coupon.Coupon
+		)
 
-			coupon1 := coupon.Coupon{
-				ID:    id1,
-				Name:  &name1,
-				Brand: &brand1,
-				Value: &value1,
-			}
-
-			id2 := "c614eeaa-1c9d-11e9-8c4f-3f7c43a05026"
-			name2 := "Save £20 at Tom's Supermercado"
-			brand2 := "Tom's"
-			value2 := 20
-
-			coupon2 := coupon.Coupon{
-				ID:    id2,
-				Name:  &name2,
-				Brand: &brand2,
-				Value: &value2,
-			}
-
-			expectedCoupons := []*coupon.Coupon{
-				&coupon1,
-				&coupon2,
-			}
-
-			_, err := realDB.Exec("INSERT INTO coupons (id, name, brand, value) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8)",
-				expectedCoupons[0].ID, *expectedCoupons[0].Name, *expectedCoupons[0].Brand, *expectedCoupons[0].Value,
-				expectedCoupons[1].ID, *expectedCoupons[1].Name, *expectedCoupons[1].Brand, *expectedCoupons[1].Value)
-			Expect(err).NotTo(HaveOccurred())
-
-			coupons, err := realService.GetCoupons()
-			Expect(err).NotTo(HaveOccurred())
-			Expect(coupons).To(Equal(expectedCoupons))
-		})
-
-		It("successfully retrieves coupons with 1 filter", func() {
-			// put this setup in a before each
+		BeforeEach(func() {
 			id1 := "354403f0-1c0e-11e9-9142-134e17ba9a5f"
 			name1 := "Save £10 at Madeleine's Supermercado"
 			brand1 := "Madeleine's"
@@ -216,7 +179,7 @@ var _ = Describe("Coupon Service", func() {
 				Value: &value3,
 			}
 
-			expectedCoupons := []*coupon.Coupon{
+			expectedCoupons = []*coupon.Coupon{
 				&coupon1,
 				&coupon2,
 				&coupon3,
@@ -227,7 +190,15 @@ var _ = Describe("Coupon Service", func() {
 				expectedCoupons[1].ID, *expectedCoupons[1].Name, *expectedCoupons[1].Brand, *expectedCoupons[1].Value,
 				expectedCoupons[2].ID, *expectedCoupons[2].Name, *expectedCoupons[2].Brand, *expectedCoupons[2].Value)
 			Expect(err).NotTo(HaveOccurred())
+		})
 
+		It("successfully retrieves all coupons", func() {
+			coupons, err := realService.GetCoupons()
+			Expect(err).NotTo(HaveOccurred())
+			Expect(coupons).To(Equal(expectedCoupons))
+		})
+
+		It("successfully retrieves coupons with 1 filter", func() {
 			coupons, err := realService.GetCoupons(handlers.Filter{
 				FilterName:  "brand",
 				FilterValue: "Tom's",
@@ -239,6 +210,17 @@ var _ = Describe("Coupon Service", func() {
 			// or if covered by the above test
 			Expect(*coupons[0].Brand).To(Equal("Tom's"))
 			Expect(*coupons[1].Brand).To(Equal("Tom's"))
+		})
+
+		It("successfully retrieves coupons with 2 (or more) filters", func() {
+			coupons, err := realService.GetCoupons(
+				handlers.Filter{FilterName: "brand", FilterValue: "Tom's"},
+				handlers.Filter{FilterName: "value", FilterValue: "30"})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(coupons)).To(Equal(1))
+
+			Expect(*coupons[0].Brand).To(Equal("Tom's"))
+			Expect(*coupons[0].Value).To(Equal(30))
 		})
 
 		It("propagates the error if querying the db fails", func() {

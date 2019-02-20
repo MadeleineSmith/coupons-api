@@ -69,8 +69,10 @@ func (s CouponService) GetCoupons(filters ...handlers.Filter) ([]*coupon.Coupon,
 		Select("id, name, brand, value").
 		From("coupons")
 
-	if len(filters) == 1 {
-		selectStatement = selectStatement.Where(squirrel.Eq{filters[0].FilterName: filters[0].FilterValue})
+	if len(filters) > 0 {
+		for _, filter := range filters {
+			selectStatement = selectStatement.Where(squirrel.Eq{filter.FilterName: filter.FilterValue})
+		}
 	}
 
 	dbQuery, args, err := selectStatement.ToSql()
