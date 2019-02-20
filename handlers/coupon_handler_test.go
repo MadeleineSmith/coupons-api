@@ -17,15 +17,15 @@ import (
 var _ = Describe("Coupon Handler", func() {
 	Describe("POST endpoint", func() {
 		var (
-			recorder *httptest.ResponseRecorder
-			request *http.Request
-			handler handlers.CouponHandler
+			recorder             *httptest.ResponseRecorder
+			request              *http.Request
+			handler              handlers.CouponHandler
 			fakeCouponSerializer *handlersfakes.FakeCouponSerializer
-			fakeCouponService *handlersfakes.FakeCouponService
-			bodyJSON string
-			expectedCoupon coupon.Coupon
-			createdCoupon coupon.Coupon
-			expectedResponse string
+			fakeCouponService    *handlersfakes.FakeCouponService
+			bodyJSON             string
+			expectedCoupon       coupon.Coupon
+			createdCoupon        coupon.Coupon
+			expectedResponse     string
 		)
 
 		BeforeEach(func() {
@@ -36,7 +36,7 @@ var _ = Describe("Coupon Handler", func() {
 
 			handler = handlers.CouponHandler{
 				CouponService: fakeCouponService,
-				Serializer: fakeCouponSerializer,
+				Serializer:    fakeCouponSerializer,
 			}
 
 			recorder = httptest.NewRecorder()
@@ -61,7 +61,7 @@ var _ = Describe("Coupon Handler", func() {
 			value := 20
 
 			expectedCoupon = coupon.Coupon{
-				Name: &name,
+				Name:  &name,
 				Brand: &brand,
 				Value: &value,
 			}
@@ -159,13 +159,13 @@ var _ = Describe("Coupon Handler", func() {
 
 	Describe("PATCH endpoint", func() {
 		var (
-			recorder *httptest.ResponseRecorder
-			bodyJson string
-			expectedCoupon coupon.Coupon
-			request *http.Request
-			handler handlers.CouponHandler
+			recorder             *httptest.ResponseRecorder
+			bodyJson             string
+			expectedCoupon       coupon.Coupon
+			request              *http.Request
+			handler              handlers.CouponHandler
 			fakeCouponSerializer *handlersfakes.FakeCouponSerializer
-			fakeCouponService *handlersfakes.FakeCouponService
+			fakeCouponService    *handlersfakes.FakeCouponService
 		)
 
 		BeforeEach(func() {
@@ -175,7 +175,7 @@ var _ = Describe("Coupon Handler", func() {
 			fakeCouponSerializer = &handlersfakes.FakeCouponSerializer{}
 
 			handler = handlers.CouponHandler{
-				Serializer: fakeCouponSerializer,
+				Serializer:    fakeCouponSerializer,
 				CouponService: fakeCouponService,
 			}
 
@@ -199,7 +199,7 @@ var _ = Describe("Coupon Handler", func() {
 			brand := "Sainsbury's"
 
 			expectedCoupon = coupon.Coupon{
-				ID: "0faec7ea-239f-11e9-9e44-d770694a0159",
+				ID:    "0faec7ea-239f-11e9-9e44-d770694a0159",
 				Brand: &brand,
 			}
 
@@ -250,14 +250,14 @@ var _ = Describe("Coupon Handler", func() {
 		})
 	})
 
-	Describe("GET endpoint", func(){
+	Describe("GET endpoint", func() {
 		var (
-			request *http.Request
+			request              *http.Request
 			fakeCouponSerializer handlersfakes.FakeCouponSerializer
-			fakeCouponService handlersfakes.FakeCouponService
-			couponHandler handlers.CouponHandler
-			recorder *httptest.ResponseRecorder
-			couponsSlice []*coupon.Coupon
+			fakeCouponService    handlersfakes.FakeCouponService
+			couponHandler        handlers.CouponHandler
+			recorder             *httptest.ResponseRecorder
+			couponsSlice         []*coupon.Coupon
 		)
 
 		BeforeEach(func() {
@@ -271,13 +271,13 @@ var _ = Describe("Coupon Handler", func() {
 
 			name1 := "2 for 1 at Vue"
 			coupon1 := coupon.Coupon{
-				ID: "c1c16d12-1c0a-11e9-a3a3-9fd4e9cc6238",
+				ID:   "c1c16d12-1c0a-11e9-a3a3-9fd4e9cc6238",
 				Name: &name1,
 			}
 
 			name2 := "Get 1000 Nectar points"
 			coupon2 := coupon.Coupon{
-				ID: "f82df334-1c9b-11e9-afd2-070208c35e68",
+				ID:   "f82df334-1c9b-11e9-afd2-070208c35e68",
 				Name: &name2,
 			}
 
@@ -291,7 +291,7 @@ var _ = Describe("Coupon Handler", func() {
 			fakeCouponSerializer.SerializeCouponsReturns([]byte(`😘`), nil)
 
 			couponHandler = handlers.CouponHandler{
-				Serializer: &fakeCouponSerializer,
+				Serializer:    &fakeCouponSerializer,
 				CouponService: &fakeCouponService,
 			}
 
@@ -333,6 +333,25 @@ var _ = Describe("Coupon Handler", func() {
 
 				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponsCallCount()).To(Equal(1))
+			})
+		})
+
+		Context("Getting coupons with 1 filter", func() {
+			It("Successfully retrieves coupons with a filter", func() {
+				queryParameters := request.URL.Query()
+				queryParameters.Add("brand", "Tom's")
+				request.URL.RawQuery = queryParameters.Encode()
+
+				couponHandler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusOK))
+
+				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
+				// ConsistOf is required for variadic arguments as treats filters parameter as []handlers.Filter
+				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(ConsistOf(handlers.Filter{
+					FilterName:  "brand",
+					FilterValue: "Tom's",
+				}))
 			})
 		})
 	})

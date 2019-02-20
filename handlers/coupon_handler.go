@@ -101,9 +101,21 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
-	coupons, err := h.CouponService.GetCoupons()
+	queryParamsMap := req.URL.Query()
+	var filter Filter
 
-	// do you want to return a different status code if the user's column name does not exist?
+	var coupons []*coupon.Coupon
+	var err error
+
+	if len(queryParamsMap) == 1 {
+		for key, value := range queryParamsMap {
+			filter.FilterName = key
+			filter.FilterValue = value[0]
+		}
+		coupons, err = h.CouponService.GetCoupons(filter)
+	} else if len(queryParamsMap) == 0 {
+		coupons, err = h.CouponService.GetCoupons()
+	}
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
 		return
