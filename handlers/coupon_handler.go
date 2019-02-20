@@ -7,11 +7,16 @@ import (
 	"net/http"
 )
 
+type Filter struct {
+	FilterName  string
+	FilterValue string
+}
+
 //go:generate counterfeiter . CouponService
 type CouponService interface {
 	CreateCoupon(couponInstance coupon.Coupon) (*coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
-	GetCoupons() ([]*coupon.Coupon, error)
+	GetCoupons(filters ...Filter) ([]*coupon.Coupon, error)
 	GetCouponById(couponId string) (*coupon.Coupon, error)
 }
 
@@ -23,7 +28,7 @@ type CouponSerializer interface {
 }
 
 type CouponHandler struct {
-	Serializer CouponSerializer
+	Serializer    CouponSerializer
 	CouponService CouponService
 }
 
@@ -97,6 +102,8 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 
 func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 	coupons, err := h.CouponService.GetCoupons()
+
+	// do you want to return a different status code if the user's column name does not exist?
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
 		return

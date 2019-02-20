@@ -3,6 +3,7 @@ package dbservices
 import (
 	"database/sql"
 	"github.com/Masterminds/squirrel"
+	"github.com/madeleinesmith/coupons/handlers"
 	"github.com/madeleinesmith/coupons/model/coupon"
 )
 
@@ -62,17 +63,22 @@ func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
 	return nil
 }
 
-func (s CouponService) GetCoupons() ([]*coupon.Coupon, error) {
+func (s CouponService) GetCoupons(filters ...handlers.Filter) ([]*coupon.Coupon, error) {
 	selectStatement := squirrel.StatementBuilder.
+		PlaceholderFormat(squirrel.Dollar).
 		Select("id, name, brand, value").
 		From("coupons")
 
-	dbQuery, _, err := selectStatement.ToSql()
+	if len(filters) == 1 {
+		selectStatement = selectStatement.Where(squirrel.Eq{filters[0].FilterName: filters[0].FilterValue})
+	}
+
+	dbQuery, args, err := selectStatement.ToSql()
 	if err != nil {
 		return nil, err
 	}
 
-	rows, err := s.DB.Query(dbQuery)
+	rows, err := s.DB.Query(dbQuery, args...)
 	if err != nil {
 		return nil, err
 	}

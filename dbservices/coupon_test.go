@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"errors"
 	"github.com/madeleinesmith/coupons/dbservices"
+	"github.com/madeleinesmith/coupons/handlers"
 	"github.com/madeleinesmith/coupons/model/coupon"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,8 +14,8 @@ import (
 var _ = Describe("Coupon Service", func() {
 	var (
 		mockedService dbservices.CouponService
-		dbMock sqlmock.Sqlmock
-		realService dbservices.CouponService
+		dbMock        sqlmock.Sqlmock
+		realService   dbservices.CouponService
 	)
 
 	BeforeEach(func() {
@@ -44,7 +45,7 @@ var _ = Describe("Coupon Service", func() {
 			value := 108
 
 			exampleCoupon = coupon.Coupon{
-				Name: &name,
+				Name:  &name,
 				Brand: &brand,
 				Value: &value,
 			}
@@ -82,7 +83,7 @@ var _ = Describe("Coupon Service", func() {
 	Describe("UpdateCoupon", func() {
 		var (
 			expectedCoupon coupon.Coupon
-			updateQuery string
+			updateQuery    string
 		)
 
 		BeforeEach(func() {
@@ -91,8 +92,8 @@ var _ = Describe("Coupon Service", func() {
 			value := 100
 
 			expectedCoupon = coupon.Coupon{
-				ID: "0faec7ea-239f-11e9-9e44-d770694a0159",
-				Name: &name,
+				ID:    "0faec7ea-239f-11e9-9e44-d770694a0159",
+				Name:  &name,
 				Brand: &brand,
 				Value: &value,
 			}
@@ -109,8 +110,8 @@ var _ = Describe("Coupon Service", func() {
 			value := 41
 
 			couponToUpdate := coupon.Coupon{
-				ID: newlyCreatedId,
-				Name: &name,
+				ID:    newlyCreatedId,
+				Name:  &name,
 				Value: &value,
 			}
 
@@ -144,8 +145,8 @@ var _ = Describe("Coupon Service", func() {
 			value1 := 10
 
 			coupon1 := coupon.Coupon{
-				ID: id1,
-				Name: &name1,
+				ID:    id1,
+				Name:  &name1,
 				Brand: &brand1,
 				Value: &value1,
 			}
@@ -156,8 +157,8 @@ var _ = Describe("Coupon Service", func() {
 			value2 := 20
 
 			coupon2 := coupon.Coupon{
-				ID: id2,
-				Name: &name2,
+				ID:    id2,
+				Name:  &name2,
 				Brand: &brand2,
 				Value: &value2,
 			}
@@ -177,6 +178,69 @@ var _ = Describe("Coupon Service", func() {
 			Expect(coupons).To(Equal(expectedCoupons))
 		})
 
+		It("successfully retrieves coupons with 1 filter", func() {
+			// put this setup in a before each
+			id1 := "354403f0-1c0e-11e9-9142-134e17ba9a5f"
+			name1 := "Save £10 at Madeleine's Supermercado"
+			brand1 := "Madeleine's"
+			value1 := 10
+
+			coupon1 := coupon.Coupon{
+				ID:    id1,
+				Name:  &name1,
+				Brand: &brand1,
+				Value: &value1,
+			}
+
+			id2 := "c614eeaa-1c9d-11e9-8c4f-3f7c43a05026"
+			name2 := "Save £20 at Tom's Supermercado"
+			brand2 := "Tom's"
+			value2 := 20
+
+			coupon2 := coupon.Coupon{
+				ID:    id2,
+				Name:  &name2,
+				Brand: &brand2,
+				Value: &value2,
+			}
+
+			id3 := "d56dab08-1c9d-11e9-944f-eb8190155a10"
+			name3 := "Save £30 at Tom's Supermercado"
+			brand3 := "Tom's"
+			value3 := 30
+
+			coupon3 := coupon.Coupon{
+				ID:    id3,
+				Name:  &name3,
+				Brand: &brand3,
+				Value: &value3,
+			}
+
+			expectedCoupons := []*coupon.Coupon{
+				&coupon1,
+				&coupon2,
+				&coupon3,
+			}
+
+			_, err := realDB.Exec("INSERT INTO coupons (id, name, brand, value) VALUES ($1, $2, $3, $4), ($5, $6, $7, $8), ($9, $10, $11, $12)",
+				expectedCoupons[0].ID, *expectedCoupons[0].Name, *expectedCoupons[0].Brand, *expectedCoupons[0].Value,
+				expectedCoupons[1].ID, *expectedCoupons[1].Name, *expectedCoupons[1].Brand, *expectedCoupons[1].Value,
+				expectedCoupons[2].ID, *expectedCoupons[2].Name, *expectedCoupons[2].Brand, *expectedCoupons[2].Value)
+			Expect(err).NotTo(HaveOccurred())
+
+			coupons, err := realService.GetCoupons(handlers.Filter{
+				FilterName:  "brand",
+				FilterValue: "Tom's",
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(coupons)).To(Equal(2))
+
+			// unsure if I should go into more depth with these assertions
+			// or if covered by the above test
+			Expect(*coupons[0].Brand).To(Equal("Tom's"))
+			Expect(*coupons[1].Brand).To(Equal("Tom's"))
+		})
+
 		It("propagates the error if querying the db fails", func() {
 			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnError(errors.New("boo 👻"))
 
@@ -189,7 +253,7 @@ var _ = Describe("Coupon Service", func() {
 		It("propagates the error if scanning to the struct fails", func() {
 			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnRows(
 				sqlmock.NewRows([]string{"id", "name", "brand", "value"}).
-				AddRow(nil, nil, nil, nil))
+					AddRow(nil, nil, nil, nil))
 
 			_, err := mockedService.GetCoupons()
 			Expect(err).To(HaveOccurred())
