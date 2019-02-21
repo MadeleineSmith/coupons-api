@@ -232,6 +232,17 @@ var _ = Describe("Coupon Service", func() {
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})
 
+		It("propagates the error if no rows are found", func() {
+			rows := sqlmock.NewRows([]string{"id", "name", "brand", "value"})
+
+			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnRows(rows)
+
+			_, err := mockedService.GetCoupons()
+			Expect(err).To(MatchError("sql: no rows in result set"))
+
+			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
+		})
+
 		It("propagates the error if scanning to the struct fails", func() {
 			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnRows(
 				sqlmock.NewRows([]string{"id", "name", "brand", "value"}).

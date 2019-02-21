@@ -119,7 +119,13 @@ func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 		coupons, err = h.CouponService.GetCoupons()
 	}
 	if err != nil {
-		handleError(w, err, http.StatusInternalServerError)
+		code := http.StatusInternalServerError
+
+		if err.Error() == "sql: no rows in result set" {
+			code = http.StatusNotFound
+		}
+
+		handleError(w, err, code)
 		return
 	}
 

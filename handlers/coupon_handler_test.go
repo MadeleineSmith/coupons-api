@@ -298,7 +298,7 @@ var _ = Describe("Coupon Handler", func() {
 			recorder = httptest.NewRecorder()
 		})
 
-		// /coupons -> no frills
+		// /coupons
 		Context("Getting coupons", func() {
 			It("Successfully gets coupons", func() {
 				couponHandler.ServeHTTP(recorder, request)
@@ -324,6 +324,14 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(fakeCouponSerializer.SerializeCouponsCallCount()).To(Equal(0))
 			})
 
+			It("returns a 404 if no coupons are found", func() {
+				fakeCouponService.GetCouponsReturns(nil, errors.New("sql: no rows in result set"))
+
+				couponHandler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusNotFound))
+			})
+
 			It("propagates the error if the coupon serializer fails", func() {
 				fakeCouponSerializer.SerializeCouponsReturns(nil, errors.New("ahhhhh 😭"))
 
@@ -336,6 +344,7 @@ var _ = Describe("Coupon Handler", func() {
 			})
 		})
 
+		// /coupons?brand=Madeleine's
 		Context("Getting coupons with filter(s)", func() {
 			It("Successfully retrieves coupons with 1 filter", func() {
 				queryParameters := request.URL.Query()

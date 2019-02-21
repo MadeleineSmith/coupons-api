@@ -2,6 +2,7 @@ package dbservices
 
 import (
 	"database/sql"
+	"errors"
 	"github.com/Masterminds/squirrel"
 	"github.com/madeleinesmith/coupons/handlers"
 	"github.com/madeleinesmith/coupons/model/coupon"
@@ -85,9 +86,12 @@ func (s CouponService) GetCoupons(filters ...handlers.Filter) ([]*coupon.Coupon,
 		return nil, err
 	}
 
+	numRows := 0
 	var couponSlice []*coupon.Coupon
 
 	for rows.Next() {
+		numRows++
+
 		couponInstance := new(coupon.Coupon)
 
 		err := rows.Scan(&couponInstance.ID, &couponInstance.Name, &couponInstance.Brand, &couponInstance.Value)
@@ -97,6 +101,12 @@ func (s CouponService) GetCoupons(filters ...handlers.Filter) ([]*coupon.Coupon,
 		}
 
 		couponSlice = append(couponSlice, couponInstance)
+	}
+
+	// this strikes me as rather an inelegant solution to determining if no rows are returned
+	if numRows == 0 {
+		err := errors.New("sql: no rows in result set")
+		return nil, err
 	}
 
 	return couponSlice, nil
