@@ -336,15 +336,13 @@ var _ = Describe("Coupon Handler", func() {
 			})
 		})
 
-		Context("Getting coupons with 1 filter", func() {
-			It("Successfully retrieves coupons with a filter", func() {
+		Context("Getting coupons with filter(s)", func() {
+			It("Successfully retrieves coupons with 1 filter", func() {
 				queryParameters := request.URL.Query()
 				queryParameters.Add("brand", "Tom's")
 				request.URL.RawQuery = queryParameters.Encode()
 
 				couponHandler.ServeHTTP(recorder, request)
-
-				Expect(recorder.Code).To(Equal(http.StatusOK))
 
 				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
 				// ConsistOf is required for variadic arguments as treats filters parameter as []handlers.Filter
@@ -352,6 +350,21 @@ var _ = Describe("Coupon Handler", func() {
 					FilterName:  "brand",
 					FilterValue: "Tom's",
 				}))
+			})
+
+			It("Successfully retrieves coupons with 2 (or more) filters", func() {
+				queryParameters := request.URL.Query()
+				queryParameters.Add("brand", "Tom's")
+				queryParameters.Add("value", "30")
+				request.URL.RawQuery = queryParameters.Encode()
+
+				couponHandler.ServeHTTP(recorder, request)
+
+				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
+				// ConsistOf is required for variadic arguments as treats filters parameter as []handlers.Filter
+				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(ConsistOf(
+					handlers.Filter{FilterName: "brand", FilterValue: "Tom's"},
+					handlers.Filter{FilterName: "value", FilterValue: "30"}))
 			})
 		})
 	})

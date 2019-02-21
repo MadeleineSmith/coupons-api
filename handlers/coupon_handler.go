@@ -102,17 +102,19 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 
 func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 	queryParamsMap := req.URL.Query()
-	var filter Filter
+	var filterSlice []Filter
 
 	var coupons []*coupon.Coupon
 	var err error
 
-	if len(queryParamsMap) == 1 {
+	if len(queryParamsMap) > 0 {
 		for key, value := range queryParamsMap {
+			var filter Filter
 			filter.FilterName = key
 			filter.FilterValue = value[0]
+			filterSlice = append(filterSlice, filter)
 		}
-		coupons, err = h.CouponService.GetCoupons(filter)
+		coupons, err = h.CouponService.GetCoupons(filterSlice...)
 	} else if len(queryParamsMap) == 0 {
 		coupons, err = h.CouponService.GetCoupons()
 	}
