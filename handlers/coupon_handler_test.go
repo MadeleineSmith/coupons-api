@@ -2,6 +2,7 @@ package handlers_test
 
 import (
 	"errors"
+	"github.com/lib/pq"
 	"github.com/madeleinesmith/coupons/handlers"
 	"github.com/madeleinesmith/coupons/handlers/handlersfakes"
 	"github.com/madeleinesmith/coupons/model/coupon"
@@ -330,6 +331,17 @@ var _ = Describe("Coupon Handler", func() {
 				couponHandler.ServeHTTP(recorder, request)
 
 				Expect(recorder.Code).To(Equal(http.StatusNotFound))
+			})
+
+			It("returns a 400 if column is undefined", func() {
+				errorPointer := new(pq.Error)
+				errorPointer.Code = "42703"
+
+				fakeCouponService.GetCouponsReturns(nil, errorPointer)
+
+				couponHandler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
 			})
 
 			It("propagates the error if the coupon serializer fails", func() {

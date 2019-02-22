@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"errors"
+	"github.com/lib/pq"
 	"github.com/madeleinesmith/coupons/model/coupon"
 	"io/ioutil"
 	"net/http"
@@ -120,6 +121,14 @@ func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 	}
 	if err != nil {
 		code := http.StatusInternalServerError
+
+		// 42703 is an undefined_column error
+		pqError, ok := err.(*pq.Error)
+		if ok {
+			if pqError.Code == "42703" {
+				code = http.StatusBadRequest
+			}
+		}
 
 		if err.Error() == "sql: no rows in result set" {
 			code = http.StatusNotFound
