@@ -1,6 +1,7 @@
 ✓ unit test for handler if HTTP method not supported e.g. DELETE
 ✓ Script to run all unit tests - use ginkgo -r
 ✓ returning the proper JSON from the POST request
+✓ Have it set up to test the real database too
 
-• Have it set up to test the real database too
-• coupon_handler -> handleError function -> place elsewhere
+• coupon_handler -> handleError function -> place elsewhere -> nah, cba
+• Think about whether I should be stripping whitespace from fields before inserting into the database

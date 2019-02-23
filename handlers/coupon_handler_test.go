@@ -23,6 +23,7 @@ var _ = Describe("Coupon Handler", func() {
 			handler              handlers.CouponHandler
 			fakeCouponSerializer *handlersfakes.FakeCouponSerializer
 			fakeCouponService    *handlersfakes.FakeCouponService
+			fakeCouponValidator  *handlersfakes.FakeCouponValidator
 			bodyJSON             string
 			expectedCoupon       coupon.Coupon
 			createdCoupon        coupon.Coupon
@@ -34,10 +35,12 @@ var _ = Describe("Coupon Handler", func() {
 
 			fakeCouponSerializer = &handlersfakes.FakeCouponSerializer{}
 			fakeCouponService = &handlersfakes.FakeCouponService{}
+			fakeCouponValidator = &handlersfakes.FakeCouponValidator{}
 
 			handler = handlers.CouponHandler{
-				CouponService: fakeCouponService,
-				Serializer:    fakeCouponSerializer,
+				CouponService:   fakeCouponService,
+				Serializer:      fakeCouponSerializer,
+				CouponValidator: fakeCouponValidator,
 			}
 
 			recorder = httptest.NewRecorder()
@@ -68,6 +71,8 @@ var _ = Describe("Coupon Handler", func() {
 			}
 
 			fakeCouponSerializer.DeserializeCouponReturns(expectedCoupon, nil)
+
+			fakeCouponValidator.ValidateReturns(nil)
 
 			createdCoupon = expectedCoupon
 			createdCoupon.ID = "9dfd6d90-1c0a-11e9-9567-73937c5f9289"
@@ -100,6 +105,9 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(fakeCouponSerializer.DeserializeCouponCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.DeserializeCouponArgsForCall(0)).To(Equal([]byte(bodyJSON)))
 
+				Expect(fakeCouponValidator.ValidateCallCount()).To(Equal(1))
+				Expect(fakeCouponValidator.ValidateArgsForCall(0)).To(Equal(expectedCoupon))
+
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(1))
 				Expect(fakeCouponService.CreateCouponArgsForCall(0)).To(Equal(expectedCoupon))
 
@@ -124,6 +132,17 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
 
 				Expect(fakeCouponSerializer.DeserializeCouponCallCount()).To(Equal(1))
+				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(0))
+			})
+
+			It("propagates the error if coupon validation fails", func() {
+				fakeCouponValidator.ValidateReturns(errors.New("👺 OMG, provide everything!"))
+
+				handler.ServeHTTP(recorder, request)
+
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+				Expect(recorder.Body.String()).To(ContainSubstring("👺 OMG, provide everything!"))
+
 				Expect(fakeCouponService.CreateCouponCallCount()).To(Equal(0))
 			})
 

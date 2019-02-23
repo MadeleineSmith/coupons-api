@@ -28,9 +28,15 @@ type CouponSerializer interface {
 	SerializeCoupons([]*coupon.Coupon) ([]byte, error)
 }
 
+//go:generate counterfeiter . CouponValidator
+type CouponValidator interface {
+	Validate(coupon coupon.Coupon) error
+}
+
 type CouponHandler struct {
-	Serializer    CouponSerializer
-	CouponService CouponService
+	Serializer      CouponSerializer
+	CouponService   CouponService
+	CouponValidator CouponValidator
 }
 
 func (h CouponHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
@@ -59,8 +65,11 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	// TODO MS - add validation step here on couponInstance to assert that all fields are provided
-	// otherwise return an error
+	err = h.CouponValidator.Validate(couponInstance)
+	if err != nil {
+		handleError(w, err, http.StatusBadRequest)
+		return
+	}
 
 	createdCoupon, err := h.CouponService.CreateCoupon(couponInstance)
 	if err != nil {
@@ -108,6 +117,7 @@ func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 	var coupons []*coupon.Coupon
 	var err error
 
+	// think you might be able to neaten this up with calling GetCoupons once... ?
 	if len(queryParamsMap) > 0 {
 		for key, value := range queryParamsMap {
 			var filter Filter
@@ -116,7 +126,7 @@ func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 			filterSlice = append(filterSlice, filter)
 		}
 		coupons, err = h.CouponService.GetCoupons(filterSlice...)
-	} else if len(queryParamsMap) == 0 {
+	} else {
 		coupons, err = h.CouponService.GetCoupons()
 	}
 	if err != nil {

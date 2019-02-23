@@ -1,18 +1,19 @@
 package main // import "github.com/madeleinesmith/coupons"
 
 import (
-	"github.com/madeleinesmith/coupons/model"
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/mux"
+	_ "github.com/lib/pq"
 	"github.com/madeleinesmith/coupons/dbservices"
 	"github.com/madeleinesmith/coupons/handlers"
+	"github.com/madeleinesmith/coupons/model"
 	"github.com/madeleinesmith/coupons/model/coupon"
-	"github.com/gorilla/mux"
+	"github.com/madeleinesmith/coupons/validators"
 	"log"
 	"net/http"
 	"os"
-	_ "github.com/lib/pq"
 )
 
 func main() {
@@ -24,14 +25,16 @@ func main() {
 		DB: db,
 	}
 	couponSerializer := coupon.Serializer{}
+	couponValidator := validators.CouponValidator{}
 	couponHandler := handlers.CouponHandler{
-		CouponService: couponService,
-		Serializer: couponSerializer,
+		CouponService:   couponService,
+		Serializer:      couponSerializer,
+		CouponValidator: couponValidator,
 	}
 
 	couponDetailsHandler := handlers.CouponDetailsHandler{
 		CouponService: couponService,
-		Serializer: couponSerializer,
+		Serializer:    couponSerializer,
 	}
 
 	router.NewRoute().Path("/coupons").Handler(couponHandler)
@@ -52,7 +55,6 @@ func initializeDb() *sql.DB {
 
 	return db
 }
-
 
 func loadConfiguration() model.Config {
 	var config model.Config
