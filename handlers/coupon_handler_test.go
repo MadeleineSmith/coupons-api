@@ -328,6 +328,7 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(recorder.Header().Get("Content-Type")).To(Equal("application/json"))
 
 				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
+				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(BeNil())
 
 				Expect(fakeCouponSerializer.SerializeCouponsCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponsArgsForCall(0)).To(Equal(couponsSlice))

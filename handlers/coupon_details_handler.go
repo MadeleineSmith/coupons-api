@@ -7,14 +7,14 @@ import (
 	"net/http"
 )
 
-type CouponDetailsHandler struct{
+type CouponDetailsHandler struct {
 	CouponService CouponService
-	Serializer CouponSerializer
+	Serializer    CouponSerializer
 }
 
 func (h CouponDetailsHandler) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 	switch req.Method {
-	case http.MethodGet :
+	case http.MethodGet:
 		h.handleGet(w, req)
 	default:
 		err := errors.New(`Method not allowed`)
@@ -36,12 +36,10 @@ func (h CouponDetailsHandler) handleGet(w http.ResponseWriter, req *http.Request
 
 	couponInstance, err := h.CouponService.GetCouponById(couponId)
 	if err != nil {
-		var code int
-		switch err {
-		case sql.ErrNoRows:
+		code := http.StatusInternalServerError
+
+		if err == sql.ErrNoRows {
 			code = http.StatusNotFound
-		default:
-			code = http.StatusInternalServerError
 		}
 
 		handleError(w, err, code)

@@ -71,6 +71,7 @@ func (h CouponHandler) handlePost(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 
+	// consider sanitizing the coupon i.e. removing whitespace from fields before inserting into the db
 	createdCoupon, err := h.CouponService.CreateCoupon(couponInstance)
 	if err != nil {
 		handleError(w, err, http.StatusInternalServerError)
@@ -117,18 +118,14 @@ func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
 	var coupons []*coupon.Coupon
 	var err error
 
-	// think you might be able to neaten this up with calling GetCoupons once... ?
-	if len(queryParamsMap) > 0 {
-		for key, value := range queryParamsMap {
-			var filter Filter
-			filter.FilterName = key
-			filter.FilterValue = value[0]
-			filterSlice = append(filterSlice, filter)
-		}
-		coupons, err = h.CouponService.GetCoupons(filterSlice...)
-	} else {
-		coupons, err = h.CouponService.GetCoupons()
+	for key, value := range queryParamsMap {
+		var filter Filter
+		filter.FilterName = key
+		filter.FilterValue = value[0]
+		filterSlice = append(filterSlice, filter)
 	}
+	coupons, err = h.CouponService.GetCoupons(filterSlice...)
+
 	if err != nil {
 		code := http.StatusInternalServerError
 
