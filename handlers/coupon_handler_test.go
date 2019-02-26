@@ -328,7 +328,7 @@ var _ = Describe("Coupon Handler", func() {
 				Expect(recorder.Header().Get("Content-Type")).To(Equal("application/json"))
 
 				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
-				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(BeNil())
+				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(Equal(handlers.Filters{}))
 
 				Expect(fakeCouponSerializer.SerializeCouponsCallCount()).To(Equal(1))
 				Expect(fakeCouponSerializer.SerializeCouponsArgsForCall(0)).To(Equal(couponsSlice))
@@ -377,35 +377,37 @@ var _ = Describe("Coupon Handler", func() {
 		})
 
 		// /coupons?brand=Madeleine's
-		Context("Getting coupons with filter(s)", func() {
-			It("Successfully retrieves coupons with 1 filter", func() {
-				queryParameters := request.URL.Query()
-				queryParameters.Add("brand", "Tom's")
-				request.URL.RawQuery = queryParameters.Encode()
-
-				couponHandler.ServeHTTP(recorder, request)
-
-				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
-				// ConsistOf is required for variadic arguments as treats filters parameter as []handlers.Filter
-				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(ConsistOf(handlers.Filter{
-					FilterName:  "brand",
-					FilterValue: "Tom's",
-				}))
-			})
-
-			It("Successfully retrieves coupons with 2 (or more) filters", func() {
+		Context("Getting coupons with query param(s)", func() {
+			It("Successfully retrieves coupons with multiple query params", func() {
 				queryParameters := request.URL.Query()
 				queryParameters.Add("brand", "Tom's")
 				queryParameters.Add("value", "30")
+				queryParameters.Add("name", "Hello world")
 				request.URL.RawQuery = queryParameters.Encode()
 
 				couponHandler.ServeHTTP(recorder, request)
 
 				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(1))
-				// ConsistOf is required for variadic arguments as treats filters parameter as []handlers.Filter
-				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(ConsistOf(
-					handlers.Filter{FilterName: "brand", FilterValue: "Tom's"},
-					handlers.Filter{FilterName: "value", FilterValue: "30"}))
+				expectedBrand := "Tom's"
+				expectedValue := 30
+				expectedName := "Hello world"
+
+				Expect(fakeCouponService.GetCouponsArgsForCall(0)).To(Equal(handlers.Filters{
+					Brand: &expectedBrand,
+					Value: &expectedValue,
+					Name:  &expectedName,
+				}))
+			})
+
+			It("propagates the error if the `value` query parameter cannot be converted to an integer", func() {
+				queryParameters := request.URL.Query()
+				queryParameters.Add("value", "hello")
+				request.URL.RawQuery = queryParameters.Encode()
+
+				couponHandler.ServeHTTP(recorder, request)
+				Expect(recorder.Code).To(Equal(http.StatusBadRequest))
+
+				Expect(fakeCouponService.GetCouponsCallCount()).To(Equal(0))
 			})
 		})
 	})

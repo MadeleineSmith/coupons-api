@@ -35,10 +35,10 @@ type FakeCouponService struct {
 		result1 *coupon.Coupon
 		result2 error
 	}
-	GetCouponsStub        func(...handlers.Filter) ([]*coupon.Coupon, error)
+	GetCouponsStub        func(handlers.Filters) ([]*coupon.Coupon, error)
 	getCouponsMutex       sync.RWMutex
 	getCouponsArgsForCall []struct {
-		arg1 []handlers.Filter
+		arg1 handlers.Filters
 	}
 	getCouponsReturns struct {
 		result1 []*coupon.Coupon
@@ -189,16 +189,16 @@ func (fake *FakeCouponService) GetCouponByIdReturnsOnCall(i int, result1 *coupon
 	}{result1, result2}
 }
 
-func (fake *FakeCouponService) GetCoupons(arg1 ...handlers.Filter) ([]*coupon.Coupon, error) {
+func (fake *FakeCouponService) GetCoupons(arg1 handlers.Filters) ([]*coupon.Coupon, error) {
 	fake.getCouponsMutex.Lock()
 	ret, specificReturn := fake.getCouponsReturnsOnCall[len(fake.getCouponsArgsForCall)]
 	fake.getCouponsArgsForCall = append(fake.getCouponsArgsForCall, struct {
-		arg1 []handlers.Filter
+		arg1 handlers.Filters
 	}{arg1})
 	fake.recordInvocation("GetCoupons", []interface{}{arg1})
 	fake.getCouponsMutex.Unlock()
 	if fake.GetCouponsStub != nil {
-		return fake.GetCouponsStub(arg1...)
+		return fake.GetCouponsStub(arg1)
 	}
 	if specificReturn {
 		return ret.result1, ret.result2
@@ -213,13 +213,13 @@ func (fake *FakeCouponService) GetCouponsCallCount() int {
 	return len(fake.getCouponsArgsForCall)
 }
 
-func (fake *FakeCouponService) GetCouponsCalls(stub func(...handlers.Filter) ([]*coupon.Coupon, error)) {
+func (fake *FakeCouponService) GetCouponsCalls(stub func(handlers.Filters) ([]*coupon.Coupon, error)) {
 	fake.getCouponsMutex.Lock()
 	defer fake.getCouponsMutex.Unlock()
 	fake.GetCouponsStub = stub
 }
 
-func (fake *FakeCouponService) GetCouponsArgsForCall(i int) []handlers.Filter {
+func (fake *FakeCouponService) GetCouponsArgsForCall(i int) handlers.Filters {
 	fake.getCouponsMutex.RLock()
 	defer fake.getCouponsMutex.RUnlock()
 	argsForCall := fake.getCouponsArgsForCall[i]

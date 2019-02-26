@@ -192,30 +192,59 @@ var _ = Describe("Coupon Service", func() {
 			Expect(err).NotTo(HaveOccurred())
 		})
 
-		It("successfully retrieves all coupons", func() {
-			coupons, err := realService.GetCoupons()
+		It("successfully retrieves coupons with no filter", func() {
+			queryParams := handlers.Filters{}
+
+			coupons, err := realService.GetCoupons(queryParams)
 			Expect(err).NotTo(HaveOccurred())
 			Expect(coupons).To(Equal(expectedCoupons))
 		})
 
-		It("successfully retrieves coupons with 1 filter", func() {
-			coupons, err := realService.GetCoupons(handlers.Filter{
-				FilterName:  "brand",
-				FilterValue: "Tom's",
+		It("successfully retrieves coupons with `brand` filter", func() {
+			expectedBrand := "Tom's"
+
+			coupons, err := realService.GetCoupons(handlers.Filters{
+				Brand: &expectedBrand,
 			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(coupons)).To(Equal(2))
 
-			// unsure if I should go into more depth with these assertions
-			// or if covered by the above test
-			Expect(*coupons[0].Brand).To(Equal("Tom's"))
-			Expect(*coupons[1].Brand).To(Equal("Tom's"))
+			Expect(*coupons[0].Brand).To(Equal(expectedBrand))
+			Expect(*coupons[1].Brand).To(Equal(expectedBrand))
+		})
+
+		It("successfully retrieves coupons with `value` filter", func() {
+			expectedValue := 30
+
+			coupons, err := realService.GetCoupons(handlers.Filters{
+				Value: &expectedValue,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(coupons)).To(Equal(1))
+
+			Expect(*coupons[0].Value).To(Equal(expectedValue))
+		})
+
+		It("successfully retrieves coupons with `name` filter", func() {
+			expectedName := "Save £30 at Tom's Supermercado"
+
+			coupons, err := realService.GetCoupons(handlers.Filters{
+				Name: &expectedName,
+			})
+			Expect(err).NotTo(HaveOccurred())
+			Expect(len(coupons)).To(Equal(1))
+
+			Expect(*coupons[0].Name).To(Equal(expectedName))
 		})
 
 		It("successfully retrieves coupons with 2 (or more) filters", func() {
-			coupons, err := realService.GetCoupons(
-				handlers.Filter{FilterName: "brand", FilterValue: "Tom's"},
-				handlers.Filter{FilterName: "value", FilterValue: "30"})
+			expectedBrand := "Tom's"
+			expectedValue := 30
+
+			coupons, err := realService.GetCoupons(handlers.Filters{
+				Brand: &expectedBrand,
+				Value: &expectedValue,
+			})
 			Expect(err).NotTo(HaveOccurred())
 			Expect(len(coupons)).To(Equal(1))
 
@@ -225,19 +254,21 @@ var _ = Describe("Coupon Service", func() {
 
 		It("propagates the error if querying the db fails", func() {
 			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnError(errors.New("boo 👻"))
+			queryParams := handlers.Filters{}
 
-			_, err := mockedService.GetCoupons()
+			_, err := mockedService.GetCoupons(queryParams)
 			Expect(err).To(MatchError("boo 👻"))
 
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
 		})
 
 		It("propagates the error if no rows are found", func() {
-			rows := sqlmock.NewRows([]string{"id", "name", "brand", "value"})
+			queryParams := handlers.Filters{}
 
+			rows := sqlmock.NewRows([]string{"id", "name", "brand", "value"})
 			dbMock.ExpectQuery("SELECT id, name, brand, value FROM coupons").WillReturnRows(rows)
 
-			_, err := mockedService.GetCoupons()
+			_, err := mockedService.GetCoupons(queryParams)
 			Expect(err).To(MatchError("sql: no rows in result set"))
 
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())
@@ -248,7 +279,9 @@ var _ = Describe("Coupon Service", func() {
 				sqlmock.NewRows([]string{"id", "name", "brand", "value"}).
 					AddRow(nil, nil, nil, nil))
 
-			_, err := mockedService.GetCoupons()
+			queryParams := handlers.Filters{}
+
+			_, err := mockedService.GetCoupons(queryParams)
 			Expect(err).To(HaveOccurred())
 
 			Expect(dbMock.ExpectationsWereMet()).To(Succeed())

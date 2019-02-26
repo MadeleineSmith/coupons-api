@@ -64,16 +64,22 @@ func (s CouponService) UpdateCoupon(coupon coupon.Coupon) error {
 	return nil
 }
 
-func (s CouponService) GetCoupons(filters ...handlers.Filter) ([]*coupon.Coupon, error) {
+func (s CouponService) GetCoupons(filters handlers.Filters) ([]*coupon.Coupon, error) {
 	selectStatement := squirrel.StatementBuilder.
 		PlaceholderFormat(squirrel.Dollar).
 		Select("id, name, brand, value").
 		From("coupons")
 
-	if len(filters) > 0 {
-		for _, filter := range filters {
-			selectStatement = selectStatement.Where(squirrel.Eq{filter.FilterName: filter.FilterValue})
-		}
+	if filters.Brand != nil {
+		selectStatement = selectStatement.Where(squirrel.Eq{"brand": *filters.Brand})
+	}
+
+	if filters.Value != nil {
+		selectStatement = selectStatement.Where(squirrel.Eq{"value": *filters.Value})
+	}
+
+	if filters.Name != nil {
+		selectStatement = selectStatement.Where(squirrel.Eq{"name": *filters.Name})
 	}
 
 	dbQuery, args, err := selectStatement.ToSql()

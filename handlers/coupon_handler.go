@@ -6,18 +6,20 @@ import (
 	"github.com/madeleinesmith/coupons/model/coupon"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 )
 
-type Filter struct {
-	FilterName  string
-	FilterValue string
+type Filters struct {
+	Name  *string
+	Value *int
+	Brand *string
 }
 
 //go:generate counterfeiter . CouponService
 type CouponService interface {
 	CreateCoupon(couponInstance coupon.Coupon) (*coupon.Coupon, error)
 	UpdateCoupon(couponInstance coupon.Coupon) error
-	GetCoupons(filters ...Filter) ([]*coupon.Coupon, error)
+	GetCoupons(filters Filters) ([]*coupon.Coupon, error)
 	GetCouponById(couponId string) (*coupon.Coupon, error)
 }
 
@@ -112,19 +114,34 @@ func (h CouponHandler) handlePatch(w http.ResponseWriter, req *http.Request) {
 }
 
 func (h CouponHandler) handleGet(w http.ResponseWriter, req *http.Request) {
-	queryParamsMap := req.URL.Query()
-	var filterSlice []Filter
-
 	var coupons []*coupon.Coupon
 	var err error
 
-	for key, value := range queryParamsMap {
-		var filter Filter
-		filter.FilterName = key
-		filter.FilterValue = value[0]
-		filterSlice = append(filterSlice, filter)
+	var filters Filters
+
+	for queryParamsKey, queryParamsValue := range req.URL.Query() {
+		if queryParamsKey == "brand" {
+			brand := queryParamsValue[0]
+			filters.Brand = &brand
+
+		} else if queryParamsKey == "value" {
+			stringValue := queryParamsValue[0]
+
+			intValue, err := strconv.Atoi(stringValue)
+			if err != nil {
+				handleError(w, err, http.StatusBadRequest)
+				return
+			}
+
+			filters.Value = &intValue
+
+		} else if queryParamsKey == "name" {
+			name := queryParamsValue[0]
+			filters.Name = &name
+		}
 	}
-	coupons, err = h.CouponService.GetCoupons(filterSlice...)
+
+	coupons, err = h.CouponService.GetCoupons(filters)
 
 	if err != nil {
 		code := http.StatusInternalServerError
